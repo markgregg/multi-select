@@ -1,18 +1,12 @@
-# MultiSelect
-
-MultiSelect is a select component that can lookup or match text as a user types. MultiSelect will search across multiple sources and show the matches in a dropdown list. Is intended to be an alternative to having multiple select components, and supports and/or opertions and multiple comparison types.
-
-
-## To install
-
-yarn add multi-select
-
-npm i multi-select
-
-## Quick start
-
-A simple string list
-```js
+import * as React from 'react'
+import './App.css'
+import DataSource, {
+  defaultComparison,
+  numberComparisons,
+  stringComparisons,
+} from './component/types/DataSource'
+import Matcher from './component/types/Matcher'
+import MutliSelect from './component/MultiSelect'
 
 const dataSource: DataSource[] = [
   {
@@ -69,6 +63,8 @@ const App = () => {
         dataSources={dataSource}
         onMatchersChanged={setMatchers}
       />
+    </>
   )
-}  
-```
+}
+
+export default App

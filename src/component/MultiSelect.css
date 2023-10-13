@@ -1,0 +1,10 @@
+.multiSelectMain {
+  display: flex;
+  flex-flow: wrap;
+  border: var(--universalSelectMainBorder, 1px solid rgb(204, 204, 204));
+  border-radius: 4px;
+  background-color: var(--universalSelectMainBackgroundColour,
+      rgb(255, 255, 255));
+  gap: 2px;
+  padding: 2px;
+}

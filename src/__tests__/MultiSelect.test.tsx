@@ -1,0 +1,373 @@
+import MultiSelect from '../component/MultiSelect'
+import DataSource, { defaultComparison } from '../component/types/DataSource'
+import Matcher, { Comparison } from '../component/types/Matcher'
+import { fireEvent, render, waitFor } from '@testing-library/react'
+import { dualMatchers, multipleMatchers, singleMatcher } from './testData'
+
+const simpleDataSource: DataSource[] = [
+  {
+    name: 'list',
+    title: 'list of strings',
+    comparisons: defaultComparison,
+    precedence: 1,
+    source: ['asdas', 'assda', 'loadsp'],
+  },
+]
+
+describe('MultiSelect', () => {
+  it('basic render shows an input box', () => {
+    const result = render(<MultiSelect dataSources={simpleDataSource} />)
+    const element = result.container.querySelector('#edit_input')
+    expect(element).toHaveValue('')
+  })
+
+  it('basic render with matchers, displays matchers and input', () => {
+    const result = createMultiSelect(singleMatcher)
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toHaveValue('')
+    const label = result.container.querySelector('#test_label')
+    expect(label?.textContent).toBe(' text')
+  })
+
+  it('basic render with matchers, displays matchers and input', () => {
+    const result = createMultiSelect(singleMatcher)
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toHaveValue('')
+    const label = result.container.querySelector('#test_label')
+    expect(label?.textContent).toBe(' text')
+  })
+
+  it('basic render with matchers, displays multiple matchers', () => {
+    const result = createMultiSelect(multipleMatchers)
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toHaveValue('')
+    const label = result.container.querySelector('#test_label')
+    expect(label?.textContent).toBe(' text')
+    const label2 = result.container.querySelector('#test2_label')
+    expect(label2?.textContent).toBe('or  text2')
+    const label3 = result.container.querySelector('#test3_label')
+    expect(label3?.textContent).toBe('and  text3')
+  })
+
+  it.each<[Comparison, string]>([
+    ['=', 'and  text'],
+    ['!', 'and ! text'],
+    ['>', 'and > text'],
+    ['<', 'and < text'],
+    ['>=', 'and >= text'],
+    ['<=', 'and <= text'],
+    ['*', 'and * text'],
+    ['!*', 'and !* text'],
+  ])('For symbol %p text is "%p"', (comp, text) => {
+    const result = createMultiSelect(dualMatchers(comp))
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toBeDefined()
+    const label = result.container.querySelector('#test2_label')
+    expect(label?.textContent).toBe(text)
+  })
+
+  it('shift left arrow, moves to previous', async () => {
+    const result = createMultiSelect(multipleMatchers)
+    const element = result.container.querySelector('#MultiSelect')
+    expect(element).toBeDefined()
+    element && fireEvent.keyDown(element, {
+      code: 'ArrowLeft',
+      shiftKey: true,
+    })
+    const input3 = result.container.querySelector('#test3_input')
+    expect(input3).toHaveValue('& =text3')
+  })
+
+  it('shift right arrow, moves to next', async () => {
+    const result = createMultiSelect(multipleMatchers)
+    const element = result.container.querySelector('#MultiSelect')
+    expect(element).toBeDefined()
+    element && fireEvent.keyDown(element, {
+      code: 'ArrowRight',
+      shiftKey: true,
+    })
+    const input3 = result.container.querySelector('#test_input')
+    expect(input3).toHaveValue('=text')
+  })
+
+  it('ctrl left arrow, moves element left', async () => {
+    let updatedMatchers: Matcher[] = []
+    const result = createMultiSelect(
+      multipleMatchers,
+      (m) => (updatedMatchers = m),
+    )
+    const matchers = multipleMatchers
+    const element = result.container.querySelector('#MultiSelect')
+    expect(element).toBeDefined()
+    element && fireEvent.keyDown(element, {
+      code: 'ArrowLeft',
+      shiftKey: true,
+    })
+    expect(
+      getRelativeElemntPosition(result.container, '#test3_view', '#test_view'),
+    ).toBe(2)
+    expect(
+      getRelativeElemntPosition(result.container, '#test3_view', '#test2_view'),
+    ).toBe(2)
+
+    element && fireEvent.keyDown(element, {
+      code: 'ArrowLeft',
+      ctrlKey: true,
+    })
+    expect(
+      getRelativeElemntPosition(result.container, '#test3_view', '#test_view'),
+    ).toBe(2)
+    expect(
+      getRelativeElemntPosition(result.container, '#test3_view', '#test2_view'),
+    ).toBe(4)
+    expect(updatedMatchers).toStrictEqual([
+      matchers[0],
+      matchers[2],
+      matchers[1],
+    ])
+  })
+
+  it('ctrl right arrow moves element right', async () => {
+    let updatedMatchers: Matcher[] = []
+    const result = createMultiSelect(
+      multipleMatchers,
+      (m) => (updatedMatchers = m),
+    )
+    const matchers = multipleMatchers
+    const element = result.container.querySelector('#MultiSelect')
+    expect(element).toBeDefined()
+    element && fireEvent.keyDown(element, {
+      code: 'ArrowRight',
+      shiftKey: true,
+    })
+    expect(
+      getRelativeElemntPosition(result.container, '#test_view', '#test2_view'),
+    ).toBe(4)
+    expect(
+      getRelativeElemntPosition(result.container, '#test_view', '#test3_view'),
+    ).toBe(4)
+    element && fireEvent.keyDown(element, {
+      code: 'ArrowRight',
+      ctrlKey: true,
+    })
+    expect(
+      getRelativeElemntPosition(result.container, '#test_view', '#test2_view'),
+    ).toBe(2)
+    expect(
+      getRelativeElemntPosition(result.container, '#test_view', '#test3_view'),
+    ).toBe(4)
+
+    expect(updatedMatchers).toStrictEqual([
+      matchers[1],
+      matchers[0],
+      matchers[2],
+    ])
+  })
+
+  it('update matcher', async () => {
+    const result = createMultiSelect(singleMatcher)
+    const element = result.container.querySelector('#MultiSelect')
+    expect(element).toBeDefined()
+    element && fireEvent.keyDown(element, {
+      code: 'ArrowLeft',
+      shiftKey: true,
+    })
+    const input = result.container.querySelector('#test_input')
+    expect(input).toBeDefined()
+    input && fireEvent.change(input, { target: { value: 'a ' } })
+    const option = result.getByText('asdas')
+    fireEvent.click(option)
+    await waitFor(
+      () => expect(result.container.querySelector('#test_label')).toBeDefined(),
+      { timeout: 250 },
+    )
+    const label = result.container.querySelector('#test_label')
+    expect(label).toHaveTextContent('asdas')
+  })
+
+  it('delete matcher', async () => {
+    let updatedMatchers: Matcher[] = []
+    const result = createMultiSelect(
+      singleMatcher,
+      (m) => (updatedMatchers = m),
+    )
+
+    const view = result.container.querySelector('#test_view')
+    expect(view).toBeDefined()
+    view && fireEvent.mouseEnter(view)
+    const del = result.container.querySelector('svg')
+    expect(del).toBeDefined()
+    del && fireEvent.click(del)
+    expect(updatedMatchers).toStrictEqual([])
+  })
+
+  it('select matcher', async () => {
+    const result = createMultiSelect(singleMatcher)
+
+    const view = result.container.querySelector('#test_view')
+    expect(view).toBeDefined()
+    view && fireEvent.click(view)
+    const input = result.container.querySelector('#test_input')
+    expect(input).toHaveValue('=text')
+  })
+
+  it('cancel select of matcher', async () => {
+    const result = createMultiSelect(singleMatcher)
+
+    const view = result.container.querySelector('#test_view')
+    expect(view).toBeDefined()
+    view && fireEvent.click(view)
+    const input = result.container.querySelector('#test_input')
+    expect(input).toBeDefined()
+    input && fireEvent.keyDown(input, { code: 'Enter' })
+    const label = result.container.querySelector('#test_label')
+    expect(label).toHaveTextContent('text')
+  })
+
+  it('add matcher', async () => {
+    let updatedMatchers: Matcher[] = []
+    const result = createMultiSelect(
+      singleMatcher,
+      (m) => (updatedMatchers = m),
+    )
+
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toBeDefined()
+    input && fireEvent.change(input, { target: { value: 'a ' } })
+    input && fireEvent.keyDown(input, { code: 'Enter' })
+    expect(updatedMatchers.length).toBe(2)
+  })
+
+  it('delete last matcher', async () => {
+    let updatedMatchers: Matcher[] = []
+    const result = createMultiSelect(
+      multipleMatchers,
+      (m) => (updatedMatchers = m),
+    )
+
+    const div = result.container.querySelector('#MultiSelect')
+    expect(div).toBeDefined()
+    div && fireEvent.keyDown(div, { code: 'Backspace', shiftKey: true })
+    expect(updatedMatchers.length).toBe(2)
+  })
+
+  it('delete all matcher', async () => {
+    let updatedMatchers: Matcher[] = []
+    const result = createMultiSelect(
+      multipleMatchers,
+      (m) => (updatedMatchers = m),
+    )
+
+    const div = result.container.querySelector('#MultiSelect')
+    expect(div).toBeDefined()
+    div && fireEvent.keyDown(div, { code: 'Backspace', ctrlKey: true })
+    expect(updatedMatchers.length).toBe(0)
+  })
+
+  it('edit matcher', async () => {
+    const result = createMultiSelect(singleMatcher)
+
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toBeDefined()
+    input && fireEvent.keyDown(input, { code: 'Backspace' })
+    const input2 = result.container.querySelector('#test_input')
+    expect(input2).toHaveValue('=text')
+  })
+
+  it('start drag', async () => {
+    const result = createMultiSelect(multipleMatchers)
+    const div = result.container.querySelector('#test3_view')
+    let dragFormat = ''
+    let dragData = ''
+    const dataTransfer = {
+      setData: (format: string, data: string) => {
+        dragFormat = format
+        dragData = data
+      },
+      effectAllowed: '',
+    }
+    expect(div).toBeDefined()
+    div && fireEvent.dragStart(div, {
+      dataTransfer,
+    })
+    expect(dragFormat).toBe('multi-select/matcher/test3')
+    expect(dragData).toBe(
+      '{"key":"test3","operator":"&","comparison":"=","source":"test","value":"value3","text":"text3"}',
+    )
+    expect(dataTransfer.effectAllowed).toBe('move')
+  })
+
+  it('drag over good', async () => {
+    const result = createMultiSelect(multipleMatchers)
+    const div = result.container.querySelector('#test2_view')
+    const dataTransfer = {
+      types: ['multi-select/matcher/test3'],
+      dropEffect: '',
+    }
+    expect(div).toBeDefined()
+    div && fireEvent.dragOver(div, {
+      dataTransfer,
+    })
+    expect(dataTransfer.dropEffect).toBe('move')
+  })
+
+  it('drag over bad', async () => {
+    const result = createMultiSelect(multipleMatchers)
+    const div = result.container.querySelector('#test3_view')
+    const dataTransfer = {
+      types: ['multi-select/matcher/test3'],
+      dropEffect: '',
+    }
+    expect(div).toBeDefined()
+    div && fireEvent.dragOver(div, {
+      dataTransfer,
+    })
+    expect(dataTransfer.dropEffect).toBe('')
+  })
+
+  it('drop data', async () => {
+    let matchers: Matcher[] = []
+    const result = createMultiSelect(
+      multipleMatchers,
+      (m) => (matchers = m),
+    )
+    const div = result.container.querySelector('#test2_view')
+    const dataTransfer = {
+      types: ['multi-select/matcher/test3'],
+      getData: () =>
+        '{"key":"test3","operator":"&","comparison":"=","source":"test","value":"value3","text":"text3"}',
+    }
+    expect(div).toBeDefined()
+    div && fireEvent.drop(div, {
+      dataTransfer,
+    })
+    expect(matchers).toStrictEqual([
+      multipleMatchers[0],
+      multipleMatchers[2],
+      multipleMatchers[1],
+    ])
+  })
+})
+
+const getRelativeElemntPosition = (
+  element: Element,
+  id1: string,
+  id2: string,
+): number | undefined => {
+  const view1 = element.querySelector(id1)
+  const view2 = element.querySelector(id2)
+  return view2 && view1 ? view1.compareDocumentPosition(view2) : undefined
+}
+
+const createMultiSelect = (
+  matchers: Matcher[],
+  onChange?: (matchers: Matcher[]) => void,
+) => {
+  return render(
+    <MultiSelect
+      dataSources={simpleDataSource}
+      matchers={matchers}
+      onMatchersChanged={onChange}
+    />,
+  )
+}
