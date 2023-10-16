@@ -1,4 +1,4 @@
-import { matcherAnd, testConfig } from '../../testData'
+import { closeBracket, matcherAnd, openBracket, testConfig } from '../../testData'
 import MatcherView from '../../../component/elements/MatcherView'
 import Matcher from '../../../component/types/Matcher'
 import {
@@ -11,13 +11,13 @@ describe('MatcherView', () => {
   it('basic render', () => {
     const result = createMatcherView(matcherAnd, false)
     const label = result.container.querySelector('#test_label')
-    expect(label).toHaveTextContent('and text')
+    expect(label?.textContent).toBe('and  text')
   })
 
   it('basic render first', () => {
     const result = createMatcherView(matcherAnd, true)
     const label = result.container.querySelector('#test_label')
-    expect(label).toHaveTextContent('text')
+    expect(label?.textContent).toBe(' text')
   })
 
   it('basic render selecte4d', () => {
@@ -57,7 +57,7 @@ describe('MatcherView', () => {
     expect(label).toBeDefined()
     label && fireEvent.mouseEnter(label)
     const tooltip = result.container.querySelector('#test_tool_tip')
-    expect(tooltip).toHaveTextContent('test: text(value)')
+    expect(tooltip?.textContent).toBe('test: text(value)')
   })
 
   it('cancel edit', () => {
@@ -97,18 +97,46 @@ describe('MatcherView', () => {
     input && fireEvent.keyDown(input, { code: 'Enter' })
     expect(deleted).toBeTruthy()
   })
+
+  it('test simple operations', async () => {
+    const result = createMatcherView(matcherAnd, false, {
+      hideOperators: true
+    })
+    const input = result.container.querySelector('#test_label')
+    expect(input?.textContent).toBe(' text')
+  })
+
+  it('test open breacket', async () => {
+    const result = createMatcherView(openBracket, false)
+    const input = result.container.querySelector('#test_label')
+    expect(input?.textContent).toBe('and ( ')
+  })
+
+  it('test open breacket first', async () => {
+    const result = createMatcherView(openBracket, true)
+    const input = result.container.querySelector('#test_label')
+    expect(input?.textContent).toBe('( ')
+  })
+
+  it('test close bracket', async () => {
+    const result = createMatcherView(closeBracket, false)
+    const input = result.container.querySelector('#test_label')
+    expect(input?.textContent).toBe(') ')
+  })
 })
 
 const createMatcherView = (
   matcher: Matcher,
   first: boolean,
-  optons?: {
+  options?: {
     selected?: boolean
     onMatcherChanged?: (matcher: Matcher) => void
+    onValidate?: (matcher: Matcher) => string | null
     onDelete?: () => void
     onSelect?: () => void
     onCancel?: () => void
     onSwapMatcher?: (matcher: Matcher, swapMatcher: Matcher) => void
+    hideOperators?: boolean
   },
 ) => {
   return render(
@@ -117,26 +145,29 @@ const createMatcherView = (
         <MatcherView
           matcher={matcher}
           first={first}
-          selected={optons?.selected}
+          selected={options?.selected}
           onMatcherChanged={
-            optons?.onMatcherChanged
-              ? optons.onMatcherChanged
-              : (m) => console.log(m)
+            options?.onMatcherChanged ??
+            ((m) => console.log(m))
+          }
+          onValidate={
+            options?.onValidate ??
+            (() => null)
           }
           onDelete={
-            optons?.onDelete ? optons.onDelete : () => console.log('delete')
+            options?.onDelete ?? (() => console.log('delete'))
           }
           onSelect={
-            optons?.onSelect ? optons.onSelect : () => console.log('select')
+            options?.onSelect ?? (() => console.log('select'))
           }
           onCancel={
-            optons?.onCancel ? optons.onCancel : () => console.log('cancel')
+            options?.onCancel ?? (() => console.log('cancel'))
           }
           onSwapMatcher={
-            optons?.onSwapMatcher
-              ? optons.onSwapMatcher
-              : (m1, m2) => console.log(`${m1}-${m2}`)
+            options?.onSwapMatcher ??
+            ((m1, m2) => console.log(`${m1}-${m2}`))
           }
+          hideOperators={options?.hideOperators}
         />
       </configContext.Provider>
     </hasFocusContext.Provider>,

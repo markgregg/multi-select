@@ -1,5 +1,5 @@
-export type Comparison = '=' | '>' | '<' | '>=' | '<=' | '!' | '*' | '!*'
-export type Operator = '&' | '|'
+export type Comparison = '=' | '>' | '<' | '>=' | '<=' | '!' | '*' | '!*' | '(' | ')'
+export type Operator = '&' | '|' | ''
 export type Value = string | number | Date
 
 export default interface Matcher {

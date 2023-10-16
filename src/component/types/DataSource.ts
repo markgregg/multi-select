@@ -7,6 +7,7 @@ export interface DataSourceBase {
   title: string
   comparisons: Comparison[]
   precedence?: number
+  selectionLimit?: number
 }
 
 export const defaultComparison: Comparison[] = ['=', '!']

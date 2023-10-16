@@ -8,4 +8,5 @@ export default interface MutliSelectStyles {
   matcherEdit?: React.CSSProperties
   input?: React.CSSProperties
   mutliSelect?: React.CSSProperties
+  errorMessage?: React.CSSProperties
 }

@@ -1,0 +1,23 @@
+.errorMessageMain {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: calc(-100% - 7px);
+  left: 0px;
+  width: max-content;
+  background-color: var(--errorMessageMainBackgroundColour,
+      rgb(255, 255, 255));
+  border: var(--matcherEditOptionsBorder, 1px solid rgb(204, 204, 204));
+  border-radius: 4px;
+  color: var(--errorMessageMainErrorColour, red);
+  font-weight: bold;
+}
+
+.errorMessageIcon {
+  height: 100%;
+  font-size: larger;
+}
+
+.errorMessageIcon:hover {
+  color: var(--errorMessageMainErrorHoverColour, rgb(255, 124, 124));
+}

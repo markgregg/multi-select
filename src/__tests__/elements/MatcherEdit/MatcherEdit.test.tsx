@@ -3,10 +3,10 @@ import {
   hasFocusContext,
   configContext,
 } from '../../../component/state/context'
-import { act, fireEvent, render } from '@testing-library/react'
+import { RenderResult, act, fireEvent, render, waitFor } from '@testing-library/react'
 import Matcher, { Comparison, Operator } from '../../../component/types/Matcher'
-import { singleMatcher, testConfig } from '../../testData'
-import { delay } from '../../testUtils'
+import { closeBracket, openBracket, singleMatcher, testConfig, testDataSources } from '../../testData'
+import { Config } from '@/component/types'
 
 describe('MatcherEdit', () => {
   it('basic render with no matcher', () => {
@@ -71,6 +71,7 @@ describe('MatcherEdit', () => {
   it('test pg up', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
+      inFocus: true,
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -79,7 +80,7 @@ describe('MatcherEdit', () => {
     const input = result.container.querySelector('#edit_input')
     expect(input).toBeDefined()
     input && act(() => fireEvent.change(input, { target: { value: 'loa' } }))
-    await act(() => delay(500))
+    await waitForOption(result, 'loadxx')
     input && fireEvent.keyDown(input, { code: 'PageUp' })
     input && fireEvent.keyDown(input, { code: 'Enter' })
     expect(matcher?.text).toBe('loadxx')
@@ -88,6 +89,7 @@ describe('MatcherEdit', () => {
   it('test pg down', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
+      inFocus: true,
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -96,7 +98,7 @@ describe('MatcherEdit', () => {
     const input = result.container.querySelector('#edit_input')
     expect(input).toBeDefined()
     input && act(() => fireEvent.change(input, { target: { value: 'loa' } }))
-    await act(() => delay(500))
+    await waitForOption(result, 'loadxx')
     input && fireEvent.keyDown(input, { code: 'PageDown' })
     input && fireEvent.keyDown(input, { code: 'Enter' })
     expect(matcher?.text).toBe('loadsp')
@@ -105,6 +107,7 @@ describe('MatcherEdit', () => {
   it('test end', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
+      inFocus: true,
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -113,7 +116,7 @@ describe('MatcherEdit', () => {
     const input = result.container.querySelector('#edit_input')
     expect(input).toBeDefined()
     input && act(() => fireEvent.change(input, { target: { value: 'loa' } }))
-    await act(() => delay(500))
+    await waitForOption(result, 'loadxx')
     input && fireEvent.keyDown(input, { code: 'End' })
     input && fireEvent.keyDown(input, { code: 'Enter' })
     expect(matcher?.text).toBe('loadxx')
@@ -122,6 +125,7 @@ describe('MatcherEdit', () => {
   it('test home', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
+      inFocus: true,
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -130,7 +134,7 @@ describe('MatcherEdit', () => {
     const input = result.container.querySelector('#edit_input')
     expect(input).toBeDefined()
     input && act(() => fireEvent.change(input, { target: { value: 'loa' } }))
-    await act(() => delay(500))
+    await waitForOption(result, 'loadxx')
     input && fireEvent.keyDown(input, { code: 'Home' })
     input && fireEvent.keyDown(input, { code: 'Enter' })
     expect(matcher?.text).toBe('loa')
@@ -139,6 +143,7 @@ describe('MatcherEdit', () => {
   it('test arrow up', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
+      inFocus: true,
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -147,7 +152,7 @@ describe('MatcherEdit', () => {
     const input = result.container.querySelector('#edit_input')
     expect(input).toBeDefined()
     input && act(() => fireEvent.change(input, { target: { value: 'loa' } }))
-    await act(() => delay(500))
+    await waitForOption(result, 'loadxx')
     input && fireEvent.keyDown(input, { code: 'ArrowUp' })
     input && fireEvent.keyDown(input, { code: 'Enter' })
     expect(matcher?.text).toBe('loadxx')
@@ -156,6 +161,7 @@ describe('MatcherEdit', () => {
   it('test arrow down', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
+      inFocus: true,
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -164,7 +170,7 @@ describe('MatcherEdit', () => {
     const input = result.container.querySelector('#edit_input')
     expect(input).toBeDefined()
     input && act(() => fireEvent.change(input, { target: { value: 'loa' } }))
-    await act(() => delay(500))
+    await waitForOption(result, 'loadxx')
     input && fireEvent.keyDown(input, { code: 'ArrowDown' })
     input && fireEvent.keyDown(input, { code: 'Enter' })
     expect(matcher?.text).toBe('loadsp')
@@ -205,6 +211,110 @@ describe('MatcherEdit', () => {
     element && fireEvent.focus(element)
     expect(hasFocus).toBeTruthy()
   })
+
+  it('test old promises ignored ', async () => {
+    let matcher: Matcher | null | undefined
+    const result = createMatcherEdit(false, undefined, {
+      inFocus: true,
+      onMatcherChanged: (m) => {
+        matcher = m
+        return true
+      },
+    })
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toBeDefined()
+    input && act(() => fireEvent.change(input, { target: { value: 'lo' } }))
+    input && act(() => fireEvent.change(input, { target: { value: 'loa' } }))
+    await waitForOption(result, 'loadxx')
+    expect(() => result.getByText('aploked')).toThrowError()
+    input && fireEvent.keyDown(input, { code: 'ArrowUp' })
+    input && fireEvent.keyDown(input, { code: 'Enter' })
+    expect(matcher?.text).toBe('loadxx')
+  })
+
+  it('test old promises ignored ', async () => {
+    const result = createMatcherEdit(false, undefined, {
+      inFocus: true
+    })
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toBeDefined()
+    input && act(() => fireEvent.change(input, { target: { value: '>asdas' } }))
+    input && fireEvent.keyDown(input, { code: 'Enter' })
+    const txt = result.getByText(`Compairson (>) isn't valid for regex.`)
+    expect(txt).toHaveTextContent(`Compairson (>) isn't valid for regex.`)
+  })
+
+  it('test simple operations', async () => {
+    const result = createMatcherEdit(false, singleMatcher[0], {
+      inFocus: true,
+      config: {
+        dataSources: testDataSources,
+        simpleOperation: true,
+        defaultItemLimit: 10,
+      }
+    })
+    const input = result.container.querySelector('#test_input')
+    expect(input).toHaveValue('=text')
+  })
+
+  it('test open bracket', async () => {
+    const result = createMatcherEdit(false, openBracket, {
+      inFocus: true,
+      config: {
+        dataSources: testDataSources,
+        simpleOperation: true,
+        defaultItemLimit: 10,
+      }
+    })
+    const input = result.container.querySelector('#test_input')
+    expect(input).toHaveValue('(')
+  })
+
+  it('test close bracket', async () => {
+    const result = createMatcherEdit(false, closeBracket, {
+      inFocus: true,
+      config: {
+        dataSources: testDataSources,
+        simpleOperation: true,
+        defaultItemLimit: 10,
+      }
+    })
+    const input = result.container.querySelector('#test_input')
+    expect(input).toHaveValue(')')
+  })
+
+  it('enter test open bracket', async () => {
+    let matcher: Matcher | null | undefined
+    const result = createMatcherEdit(false, undefined, {
+      inFocus: true,
+      onMatcherChanged: (m) => {
+        matcher = m
+        return true
+      },
+    })
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toBeDefined()
+    input && act(() => fireEvent.change(input, { target: { value: '(' } }))
+    expect(matcher?.comparison).toBe('(')
+  })
+
+  it('enter test close bracket', async () => {
+    let matcher: Matcher | null | undefined
+    const result = createMatcherEdit(false, undefined, {
+      inFocus: true,
+      onMatcherChanged: (m) => {
+        matcher = m
+        return true
+      },
+    })
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toBeDefined()
+    input && act(() => fireEvent.change(input, { target: { value: ')' } }))
+    expect(matcher?.comparison).toBe(')')
+  })
+
+
+
 })
 
 const createMatcherEdit = (
@@ -214,23 +324,28 @@ const createMatcherEdit = (
     inFocus?: boolean
     isActive?: boolean
     onMatcherChanged?: (matcher: Matcher | null) => boolean
+    onValidate?: (matcer: Matcher) => string | null
     onFocus?: () => void
     onCancel?: () => void
     onEditPrevious?: () => void
-  },
+    config?: Config
+  }
 ) => {
   return render(
     <hasFocusContext.Provider value={true}>
-      <configContext.Provider value={testConfig}>
+      <configContext.Provider value={options?.config ?? testConfig}>
         <MatcherEdit
           matcher={matcher}
           onMatcherChanged={
             options?.onMatcherChanged
-              ? options.onMatcherChanged
-              : (m) => {
-                console.log(m)
-                return true
-              }
+            ?? ((m) => {
+              console.log(m)
+              return true
+            })
+          }
+          onValidate={
+            options?.onValidate
+            ?? (() => null)
           }
           onFocus={options?.onFocus}
           onCancel={options?.onCancel}
@@ -242,4 +357,10 @@ const createMatcherEdit = (
       </configContext.Provider>
     </hasFocusContext.Provider>,
   )
+}
+
+const waitForOption = async (result: RenderResult, optText: string) => {
+  await waitFor(() => expect(result.getByText(optText)).toBeDefined(), { timeout: 1000 })
+  const opt = result.getByText(optText)
+  expect(opt.textContent).toBe(optText)
 }

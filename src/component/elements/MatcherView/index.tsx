@@ -9,33 +9,39 @@ const multiSelectPrefix = 'multi-select/matcher/'
 interface MatcherViewProps {
   matcher: Matcher
   onMatcherChanged: (matcher: Matcher) => void
+  onValidate: (matcher: Matcher) => string | null
   onDelete: () => void
   onSelect: () => void
   onCancel: () => void
   onSwapMatcher: (matcher: Matcher, swapMatcher: Matcher) => void
   selected?: boolean
   first: boolean
+  hideOperators?: boolean
+  showWarning?: boolean
   styles?: MutliSelectStyles
 }
 
-const matcherDisplay = (matcher: Matcher, first: boolean): string => {
-  return `${first ? '' : (matcher.operator === '&' ? 'and' : 'or') + ' '}${matcher.comparison !== '=' ? matcher.comparison : ''
+const matcherDisplay = (matcher: Matcher, first: boolean, hideOperators: boolean): string => {
+  return `${first || hideOperators || matcher.operator === '' || matcher.comparison === ')' ? '' : ((matcher.operator === '&' ? 'and' : 'or') + ' ')}${matcher.comparison !== '=' ? matcher.comparison : ''
     } ${matcher.text}`
 }
 
 const matcherToolTip = (matcher: Matcher): string => {
-  return `${matcher.source}: ${matcher.text}(${matcher.value})`
+  return `${matcher.source}: ${matcher.text}${matcher.value !== matcher.text ? '(' + matcher.value + ')' : ''}`
 }
 
 const MatcherView: React.FC<MatcherViewProps> = ({
   matcher,
   onMatcherChanged,
+  onValidate,
   onDelete,
   onSelect,
   onCancel,
   onSwapMatcher,
   selected,
   first,
+  hideOperators,
+  showWarning,
   styles,
 }) => {
   const [showToopTip, setShowToolTip] = React.useState<boolean>(false)
@@ -58,13 +64,12 @@ const MatcherView: React.FC<MatcherViewProps> = ({
     event.stopPropagation()
   }
 
-  const matcherUpdated = (update: Matcher | null) => {
+  const matcherUpdated = (update: Matcher | null): void => {
     if (update) {
       onMatcherChanged(update)
     } else {
       onDelete()
     }
-    return true
   }
 
   const dragMatcher = (event: React.DragEvent<HTMLDivElement>) => {
@@ -115,6 +120,7 @@ const MatcherView: React.FC<MatcherViewProps> = ({
         <MatcherEdit
           matcher={matcher}
           onMatcherChanged={matcherUpdated}
+          onValidate={onValidate}
           onCancel={onCancel}
           inFocus={true}
           first={first}
@@ -126,7 +132,7 @@ const MatcherView: React.FC<MatcherViewProps> = ({
           {showToopTip && (
             <div
               id={matcher.key + '_tool_tip'}
-              className="matcherViewToolTip"
+              className='matcherViewToolTip'
               style={styles?.matcherToolTip}
             >
               {matcherToolTip(matcher)}
@@ -136,8 +142,9 @@ const MatcherView: React.FC<MatcherViewProps> = ({
             onMouseEnter={() => setShowToolTip(true)}
             onMouseLeave={() => setShowToolTip(false)}
             id={matcher.key + '_label'}
+            className={showWarning ? 'matcherViewWarning' : ''}
           >
-            {matcherDisplay(matcher, first)}
+            {matcherDisplay(matcher, first, hideOperators ?? false)}
           </span>
         </>
       )}

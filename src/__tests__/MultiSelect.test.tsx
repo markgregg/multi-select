@@ -1,8 +1,8 @@
 import MultiSelect from '../component/MultiSelect'
 import DataSource, { defaultComparison } from '../component/types/DataSource'
 import Matcher, { Comparison } from '../component/types/Matcher'
-import { fireEvent, render, waitFor } from '@testing-library/react'
-import { dualMatchers, multipleMatchers, singleMatcher } from './testData'
+import { fireEvent, prettyDOM, render, waitFor } from '@testing-library/react'
+import { dualMatchers, multipleListMatchers, multipleMatchers, singleMatcher } from './testData'
 
 const simpleDataSource: DataSource[] = [
   {
@@ -10,6 +10,7 @@ const simpleDataSource: DataSource[] = [
     title: 'list of strings',
     comparisons: defaultComparison,
     precedence: 1,
+    selectionLimit: 2,
     source: ['asdas', 'assda', 'loadsp'],
   },
 ]
@@ -346,6 +347,86 @@ describe('MultiSelect', () => {
       multipleMatchers[2],
       multipleMatchers[1],
     ])
+  })
+
+  it('test validate add', async () => {
+    let matchers: Matcher[] = []
+    const result = createMultiSelect(
+      multipleListMatchers,
+      (m) => (matchers = m),
+    )
+
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toBeDefined()
+    input && fireEvent.change(input, { target: { value: 'asdas' } })
+    input && fireEvent.keyDown(input, { code: 'Enter' })
+    const error = result.container.querySelector('#editError')
+    expect(error?.textContent).toBe('Datasource (list) is limited to 2 items.')
+    expect(matchers).toStrictEqual([])
+  })
+
+  it('test validate open bracket', async () => {
+    const result = createMultiSelect(multipleListMatchers)
+
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toBeDefined()
+    input && fireEvent.change(input, { target: { value: '(' } })
+    const error = result.container.querySelector('#editError')
+    expect(error).toBe(null)
+  })
+
+  it('test validate close bracket', async () => {
+    const result = createMultiSelect(multipleListMatchers)
+
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toBeDefined()
+    input && fireEvent.change(input, { target: { value: ')' } })
+    const error = result.container.querySelector('#editError')
+    expect(error).toBe(null)
+  })
+
+  it('test highlight mismatched open brackets', async () => {
+    const result = createMultiSelect(multipleListMatchers)
+
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toBeDefined()
+    input && fireEvent.change(input, { target: { value: '(' } })
+    const bracket = result.getByText('and (')
+    expect(bracket.className).toBe('matcherViewWarning')
+    console.log(prettyDOM(result.container))
+  })
+
+  it('test highlight mismatched close brackets', async () => {
+    const result = createMultiSelect(multipleListMatchers)
+
+    const input = result.container.querySelector('#edit_input')
+    expect(input).toBeDefined()
+    input && fireEvent.change(input, { target: { value: ')' } })
+    const bracket = result.getByText(')')
+    expect(bracket.className).toBe('matcherViewWarning')
+    console.log(prettyDOM(result.container))
+  })
+
+
+  it('test validate edit', async () => {
+    let matchers: Matcher[] = []
+    const result = createMultiSelect(
+      multipleListMatchers,
+      (m) => (matchers = m),
+    )
+    const element = result.container.querySelector('#MultiSelect')
+    expect(element).toBeDefined()
+    element && fireEvent.keyDown(element, {
+      code: 'ArrowLeft',
+      shiftKey: true,
+    })
+    const input = result.container.querySelector('#test3_input')
+    expect(input).toBeDefined()
+    input && fireEvent.change(input, { target: { value: 'asdas' } })
+    input && fireEvent.keyDown(input, { code: 'Enter' })
+    const error = result.container.querySelector('#editError')
+    expect(error?.textContent).toBe('Datasource (list) is limited to 2 items.')
+    expect(matchers).toStrictEqual([])
   })
 })
 

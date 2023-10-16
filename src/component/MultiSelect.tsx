@@ -17,11 +17,13 @@ import { hasFocusContext, configContext, ITEM_LIMIT } from './state/context'
 import MatcherView from './elements/MatcherView'
 import MatcherEdit from './elements/MatcherEdit'
 import './MultiSelect.css'
+import { checkBracket, validateMatcher } from './MultiSelectFunctions'
 
 interface MultiSelectProps {
   matchers?: Matcher[]
   dataSources: DataSource[]
   defaultItemLimit?: number
+  simpleOperation?: boolean
   onMatchersChanged?: (matchers: Matcher[]) => void
   styles?: MutliSelectStyles
 }
@@ -30,6 +32,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   matchers,
   dataSources,
   defaultItemLimit,
+  simpleOperation,
   onMatchersChanged,
   styles,
 }) => {
@@ -40,6 +43,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   const [currentMatchers, setCurrentMatchers] = React.useState<Matcher[]>(
     matchers ?? [],
   )
+  const [mismatchedBrackets, setMismatchedBrackets] = React.useState<number[]>([])
 
   React.useEffect(() => {
     document.addEventListener('mousedown', mouseClick)
@@ -65,13 +69,27 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     }
   }
 
-  const updateMatcher = (matcher: Matcher) => {
+  const validateBrackets = (newMatchers: Matcher[]) => {
+    const missingBracketIndexes: number[] = []
+    const brackets = newMatchers.map(m => m.comparison)
+    checkBracket(brackets, missingBracketIndexes, true)
+    checkBracket(brackets, missingBracketIndexes, false)
+    setMismatchedBrackets(missingBracketIndexes)
+  }
+
+  const updatedMatchers = (newMatchers: Matcher[]) => {
+    setCurrentMatchers(newMatchers)
+    notifyMatchersChanged(newMatchers)
+    validateBrackets(newMatchers)
+  }
+
+
+  const updateMatcher = (matcher: Matcher): void => {
     const newMatchers = currentMatchers.map((mat) =>
       mat.key === matcher.key ? matcher : mat,
     )
-    setCurrentMatchers(newMatchers)
+    updatedMatchers(newMatchers)
     setActiveMatcher(null)
-    notifyMatchersChanged(newMatchers)
   }
 
   const deleteLast = () => {
@@ -81,7 +99,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   }
 
   const deleteAll = () => {
-    setCurrentMatchers([])
+    updatedMatchers([])
     setActiveMatcher(null)
   }
 
@@ -93,25 +111,21 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
   const deleteMatcher = (matcher: Matcher, forceClearActivematcher = false) => {
     const newMatchers = currentMatchers.filter((mat) => mat.key !== matcher.key)
-    setCurrentMatchers(newMatchers)
+    updatedMatchers(newMatchers)
     if (
       activeMatcher !== null &&
       (forceClearActivematcher || activeMatcher > currentMatchers.length - 1)
     ) {
       setActiveMatcher(null)
     }
-    notifyMatchersChanged(newMatchers)
     inputRef.current?.focus()
   }
 
-  const addMatcher = (matcher: Matcher | null): boolean => {
+  const addMatcher = (matcher: Matcher | null): void => {
     if (matcher) {
       const newMatchers = [...currentMatchers, matcher]
-      setCurrentMatchers(newMatchers)
-      notifyMatchersChanged(newMatchers)
-      return true
+      updatedMatchers(newMatchers)
     }
-    return false
   }
 
   const selectMatcher = (index: number) => {
@@ -134,8 +148,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             ? matcher
             : mtch,
       )
-      setCurrentMatchers(newMatchers)
-      notifyMatchersChanged(newMatchers)
+      updatedMatchers(newMatchers)
     }
   }
 
@@ -198,6 +211,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   const config: Config = {
     dataSources,
     defaultItemLimit: defaultItemLimit ?? ITEM_LIMIT,
+    simpleOperation: simpleOperation ?? false
   }
 
   return (
@@ -215,12 +229,15 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
               key={matcher.key}
               matcher={matcher}
               onMatcherChanged={updateMatcher}
+              onValidate={m => validateMatcher(currentMatchers, dataSources, m)}
               onDelete={() => deleteMatcher(matcher, true)}
               onSelect={() => selectMatcher(index)}
               onCancel={() => setActiveMatcher(null)}
               onSwapMatcher={swapMatchers}
               selected={index === activeMatcher}
-              first={index === 0}
+              first={index === 0 || currentMatchers[index - 1].comparison === '('}
+              hideOperators={simpleOperation}
+              showWarning={mismatchedBrackets.includes(index)}
               styles={styles}
             />
           ))}
@@ -228,6 +245,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             <MatcherEdit
               ref={inputRef}
               onMatcherChanged={addMatcher}
+              onValidate={m => validateMatcher(currentMatchers, dataSources, m)}
               onFocus={inputFocus}
               inFocus={activeMatcher === null}
               first={currentMatchers.length === 0}

@@ -6,6 +6,7 @@ const ITEM_LIMIT = 10
 const hasFocusContext = React.createContext<boolean>(false)
 const configContext = React.createContext<Config>({
   dataSources: [],
+  simpleOperation: false,
   defaultItemLimit: ITEM_LIMIT,
 })
 

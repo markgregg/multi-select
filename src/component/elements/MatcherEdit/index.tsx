@@ -9,10 +9,12 @@ import { guid } from '../../utils'
 import OptionList from '../OptionList'
 import MutliSelectStyles from '../../types/MutliSelectStyles'
 import './MatcherEdit.css'
+import ErrorMessage from '../ErrorMessage'
 
 interface MatcherEditProps {
   matcher?: Matcher
-  onMatcherChanged: (matcher: Matcher | null) => boolean
+  onMatcherChanged: (matcher: Matcher | null) => void
+  onValidate: (matcher: Matcher) => string | null
   onFocus?: () => void
   onCancel?: () => void
   onEditPrevious?: () => void
@@ -27,6 +29,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const {
       matcher,
       onMatcherChanged,
+      onValidate,
       onFocus,
       onCancel,
       onEditPrevious,
@@ -35,10 +38,11 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       isActive,
       styles,
     } = props
+    const config = React.useContext<Config>(configContext)
     const inputRef = React.useRef<HTMLInputElement | null>(null)
     const [text, setText] = React.useState<string>(
       matcher
-        ? `${!first ? matcher.operator + ' ' : ''}${matcher.comparison}${matcher.text
+        ? `${!first && !config.simpleOperation ? matcher.operator + ' ' : ''}${matcher.comparison}${matcher.text
         }`
         : '',
     )
@@ -52,8 +56,8 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const [options, setOptions] = React.useState<[string, Option[]][]>([])
     const [totalOptions, setTotalOptions] = React.useState<number>(0)
     const [activeOption, setActiveOption] = React.useState<number | null>(null)
+    const [error, setError] = React.useState<string | null>(null)
 
-    const config = React.useContext<Config>(configContext)
     const controlHasFocus = React.useContext<boolean>(hasFocusContext)
 
     React.useEffect(() => {
@@ -62,7 +66,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       }
     }, [isActive])
 
-    const checkForsymbol = (searchText: string): string => {
+    const checkForOperator = (searchText: string): string => {
       if (searchText.length > 2) {
         const symbol = searchText.substring(0, 3)
         if (symbol === 'and') {
@@ -72,16 +76,34 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       }
       if (searchText.length > 1) {
         const symbol = searchText.substring(0, 2)
-        if (symbol === '>=' || symbol === '<=' || symbol === '!*') {
-          setComparison(symbol)
-          return searchText.substring(2).trim()
-        }
         if (symbol === 'or') {
           setOperator('|')
           return searchText.substring(2).trim()
         }
       }
       const symbol = searchText[0]
+      if (symbol === '&' || symbol === '|') {
+        setOperator(symbol)
+        return searchText.substring(1).trim()
+      }
+      return searchText
+    }
+
+    const checkForComparison = (searchText: string): string | null => {
+      if (searchText.length > 1) {
+        const symbol = searchText.substring(0, 2)
+        if (symbol === '>=' || symbol === '<=' || symbol === '!*') {
+          setComparison(symbol)
+          return searchText.substring(2).trim()
+        }
+      }
+      const symbol = searchText[0]
+      if (!config.simpleOperation && (
+        symbol === '(' ||
+        symbol === ')')) {
+        selectOption(symbol)
+        return null
+      }
       if (
         symbol === '=' ||
         symbol === '>' ||
@@ -90,10 +112,6 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
         symbol === '*'
       ) {
         setComparison(symbol)
-        return searchText.substring(1).trim()
-      }
-      if (symbol === '&' || symbol === '|') {
-        setOperator(symbol)
         return searchText.substring(1).trim()
       }
       return searchText
@@ -171,14 +189,21 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       key.current = currentKey
       const newText = event.target.value
       const allOptions: [string, Option[]][] = []
+      setError('')
       setComparison('=')
       setOperator('&')
 
       let totalCount = 0
       if (newText.length > 0) {
         let searchText = newText.trim()
-        searchText = checkForsymbol(searchText)
-        searchText = checkForsymbol(searchText)
+        if (!config.simpleOperation) {
+          searchText = checkForOperator(searchText)
+        }
+        const result = checkForComparison(searchText)
+        if (result === null) {
+          return
+        }
+        searchText = result
         if (searchText.length > 0) {
           config.dataSources.forEach((ds) => {
             if ('source' in ds) {
@@ -322,8 +347,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           if (text.length === 0) {
             if (onEditPrevious && !event.shiftKey && !event.ctrlKey) {
               onEditPrevious()
-            } else if (onCancel) {
-              //not standalone edit
+            } else if (onCancel) { //not standalone edit
               selectOption()
             }
             event.preventDefault()
@@ -332,7 +356,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       }
     }
 
-    const validateOperator = (option: Option): boolean => {
+    const validateOperator = (option: Option): string | null => {
       const ds = config.dataSources.find((d) => d.name === option.source)
       if (ds) {
         if (!ds.comparisons.includes(comparison)) {
@@ -341,38 +365,54 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
             inputRef.current.selectionStart = idx
             inputRef.current.selectionEnd = idx + 1
           }
-          return false
+          return `Compairson (${comparison}) isn't valid for ${ds.name}.`
         }
       }
-      return true
+      return null
     }
 
-    const selectOption = (option?: Option) => {
-      if (!option || validateOperator(option)) {
-        if (
-          onMatcherChanged(
-            option
-              ? {
-                key: matcher?.key ?? guid(),
-                operator,
-                comparison,
-                source: option.source,
-                value: option.value,
-                text: option.text,
-              }
-              : null,
-          )
-        ) {
-          setText('')
-          setOptions([])
-          setTotalOptions(0)
-          setActiveOption(null)
+    const selectOption = (option?: Option | '(' | ')') => {
+      if (option !== '(' && option !== ')' && option) {
+        const err = validateOperator(option)
+        if (err) {
+          setError(err)
+          return
         }
       }
+      const newMatcher = option
+        ? {
+          key: matcher?.key ?? guid(),
+          operator: option === ')' ? '' : operator,
+          comparison: option === '(' || option === ')' ? option : comparison,
+          source: (typeof option === 'object') ? option.source : '',
+          value: (typeof option === 'object') ? option.value : '',
+          text: (typeof option === 'object') ? option.text : '',
+        }
+        : null
+      if (newMatcher) {
+        const err = onValidate(newMatcher)
+        if (err) {
+          setError(err)
+          return
+        }
+      }
+      onMatcherChanged(newMatcher)
+      setText('')
+      setOptions([])
+      setTotalOptions(0)
+      setActiveOption(null)
     }
 
     return (
       <div className="matcherEditMain" style={styles?.matcherEdit}>
+        {
+          error &&
+          <ErrorMessage
+            errorMessage={error}
+            onErrorAcknowledged={() => setError('')}
+            style={styles?.errorMessage}
+          />
+        }
         <input
           id={(matcher?.key ?? 'edit') + '_input'}
           style={styles?.input}
