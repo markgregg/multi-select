@@ -1,37 +1,37 @@
-.optionListMain {
+.selectMain {
+  position: relative;
+  border: var(--matcherEditOptionsBorder, 1px solid rgb(204, 204, 204));
+  border-radius: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.selectMainOptionList {
   position: absolute;
   top: calc(100% + 5px);
   border: var(--matcherEditOptionsBorder, 1px solid rgb(204, 204, 204));
   border-radius: 4px;
-  animation: growDown 300ms ease-in-out forwards;
+  animation: growDown 400ms ease-in-out forwards;
   transform-origin: top center;
   z-index: 999;
-  background: var(--matcherEditOptionsBackgroundColor,
+  background-color: var(--matcherEditOptionsBackgroundColor,
       rgb(255, 255, 255));
 }
 
-.optionListMain ul {
+.selectMain ul {
   list-style-type: none;
   margin: 0;
   padding: 0;
 }
 
-.optionListOption {
+.selectMain li {
   padding-left: 5px;
   padding-right: 5px;
   text-align: start;
 }
 
-.optionListActiveOption {
+.selectMain li:hover {
   background: var(--optionListActiveOption, lightgray);
-}
-
-.optionListCategory {
-  background: var(--matcherEditMainCategoryBackground, darkgrey);
-  font-weight: bold;
-  font-size: x-small;
-  padding-left: 5px;
-  padding-right: 5px;
 }
 
 @keyframes growDown {

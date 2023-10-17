@@ -1,10 +1,20 @@
 .multiSelectMain {
   display: flex;
   flex-flow: wrap;
-  border: var(--universalSelectMainBorder, 1px solid rgb(204, 204, 204));
+  border: var(--multiSelectMainBorder, 1px solid rgb(204, 204, 204));
   border-radius: 4px;
-  background-color: var(--universalSelectMainBackgroundColour,
+  background: var(--multiSelectMainBackgroundColor,
       rgb(255, 255, 255));
   gap: 2px;
   padding: 2px;
+}
+
+.multiSelectClearIcon {
+  color: var(--multiSelectClearIconColor);
+  display: flex;
+  align-items: center;
+}
+
+.multiSelectClearIcon:hover {
+  color: var(--multiSelectClearIconHoverColor, gray);
 }

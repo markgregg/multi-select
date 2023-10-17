@@ -16,8 +16,11 @@ import {
 import { hasFocusContext, configContext, ITEM_LIMIT } from './state/context'
 import MatcherView from './elements/MatcherView'
 import MatcherEdit from './elements/MatcherEdit'
-import './MultiSelect.css'
 import { checkBracket, validateMatcher } from './MultiSelectFunctions'
+import { MdClear } from 'react-icons/md'
+import useExternalClicks from './hooks/useExternalClicks/useExternalClicks'
+import './MultiSelect.css'
+
 
 interface MultiSelectProps {
   matchers?: Matcher[]
@@ -25,6 +28,7 @@ interface MultiSelectProps {
   defaultItemLimit?: number
   simpleOperation?: boolean
   onMatchersChanged?: (matchers: Matcher[]) => void
+  clearIcon?: React.ReactElement
   styles?: MutliSelectStyles
 }
 
@@ -34,6 +38,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   defaultItemLimit,
   simpleOperation,
   onMatchersChanged,
+  clearIcon,
   styles,
 }) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null)
@@ -45,18 +50,11 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   )
   const [mismatchedBrackets, setMismatchedBrackets] = React.useState<number[]>([])
 
-  React.useEffect(() => {
-    document.addEventListener('mousedown', mouseClick)
-    return () => document.removeEventListener('mousedown', mouseClick)
+  const loseFocus = React.useCallback(() => {
+    setHasFocus(false)
   }, [])
 
-  const mouseClick = (mouseEvent: MouseEvent) => {
-    if (editDivRef.current && mouseEvent.target) {
-      if (!editDivRef.current.contains(mouseEvent.target as Node)) {
-        setHasFocus(false)
-      }
-    }
-  }
+  useExternalClicks(editDivRef.current, loseFocus)
 
   const inputFocus = () => {
     setHasFocus(true)
@@ -224,23 +222,37 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           ref={editDivRef}
           onKeyDown={handleKeyPress}
         >
-          {currentMatchers?.map((matcher, index) => (
-            <MatcherView
-              key={matcher.key}
-              matcher={matcher}
-              onMatcherChanged={updateMatcher}
-              onValidate={m => validateMatcher(currentMatchers, dataSources, m)}
-              onDelete={() => deleteMatcher(matcher, true)}
-              onSelect={() => selectMatcher(index)}
-              onCancel={() => setActiveMatcher(null)}
-              onSwapMatcher={swapMatchers}
-              selected={index === activeMatcher}
-              first={index === 0 || currentMatchers[index - 1].comparison === '('}
-              hideOperators={simpleOperation}
-              showWarning={mismatchedBrackets.includes(index)}
-              styles={styles}
-            />
-          ))}
+          {
+            currentMatchers.length > 0 && <div
+              className='multiSelectClearIcon'
+              onClick={() => deleteAll()}
+            >
+              {
+                clearIcon
+                  ? clearIcon
+                  : <MdClear />
+              }
+            </div>
+          }
+          {
+            currentMatchers?.map((matcher, index) => (
+              <MatcherView
+                key={matcher.key}
+                matcher={matcher}
+                onMatcherChanged={updateMatcher}
+                onValidate={m => validateMatcher(currentMatchers, dataSources, m)}
+                onDelete={() => deleteMatcher(matcher, true)}
+                onSelect={() => selectMatcher(index)}
+                onCancel={() => setActiveMatcher(null)}
+                onSwapMatcher={swapMatchers}
+                selected={index === activeMatcher}
+                first={index === 0 || currentMatchers[index - 1].comparison === '('}
+                hideOperators={simpleOperation}
+                showWarning={mismatchedBrackets.includes(index)}
+                styles={styles}
+              />
+            ))
+          }
           {
             <MatcherEdit
               ref={inputRef}

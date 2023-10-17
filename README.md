@@ -178,27 +178,29 @@ The following components can be styled
 ### Global Variables
 
 #### MultiSelect Main
-* border - --universalSelectMainBorder, default=1px solid rgb(204, 204, 204)
-* background Color - --universalSelectMainBackgroundColour, default=rgb(255, 255, 255)
+* border - --multiSelectMainBorder, default=1px solid rgb(204, 204, 204)
+* background color - --multiSelectMainBackgroundColor, default=rgb(255, 255, 255)
+* clear icon color - --multiSelectClearIcon
+* clear icon hover color - --multiSelectClearIconHoverColor, default=gray
 
 #### Matcher View
-* background-color - --matcherViewMainBackgroundColour
-* delete icon color - --matcherViewMainDeleteIconColor, default = black
+* background-color - --matcherViewMainBackgroundColor
+* delete icon color - --matcherViewMainDeleteIconColor
 * delete icon hover - --matcherViewMainDeleteIconHowverColor - default=gray
-* warning background colour - --matcherViewWarningBackgroundColor, default=orange
+* warning background color - --matcherViewWarningBackgroundColor, default=orange
 
 #### ToolTip
-* background-color - --matcherViewTooltipBackgroundColour, default=rgb(255, 255, 255)
+* background-color - --matcherViewTooltipBackgroundColor, default=rgb(255, 255, 255)
 * border - --matcherEditOptionsBorder, default=1px solid rgb(204, 204, 204)
 
 #### Error Message
-* background-color - --errorMessageMainBackgroundColour, default=rgb(255, 255, 255)
+* background-color - --errorMessageMainBackgroundColor, default=rgb(255, 255, 255)
 * border -  --matcherEditOptionsBorder, default=1px solid rgb(204, 204, 204)
-* colour --errorMessageMainErrorColour, default=red
-* icon hover colour - --errorMessageMainErrorHoverColour, default=rgb(255, 124, 124)
+* color --errorMessageMainErrorColor, default=red
+* icon hover color - --errorMessageMainErrorHoverColor, default=rgb(255, 124, 124)
 
 #### Option List
 * border - --matcherEditOptionsBorder, default=1px solid rgb(204, 204, 204)
-* background-color - --matcherEditOptionsBackgroundColour, default=rgb(255, 255, 255)
+* background-color - --matcherEditOptionsBackgroundColor, default=rgb(255, 255, 255)
 * active opton background - --optionListActiveOption, default=lightgray
 * option category background - --matcherEditMainCategoryBackground, defalt=darkgrey

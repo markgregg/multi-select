@@ -40,7 +40,11 @@ const OptionList: React.FC<OptionListProps> = ({
                     ? 'optionListOption optionListActiveOption'
                     : 'optionListOption'
                 }
-                style={styles?.option}
+                style={
+                  idx === activeOption
+                    ? styles?.activeOption
+                    : styles?.option
+                }
                 key={option.value.toString()}
                 onMouseEnter={() => onSelectActiveOption(idx)}
                 onClick={(e) => selectOption(e, option)}

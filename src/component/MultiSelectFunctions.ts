@@ -38,10 +38,7 @@ export const validateMatcher = (
     return null
   }
   const dataSource = dataSources.find(ds => ds.name === matcher.source)
-  if (!dataSource) {
-    return `Unknown data source ${matcher.source}.`
-  }
-  if (dataSource.selectionLimit) {
+  if (dataSource?.selectionLimit) {
     const currentCount = matchers.filter(m => matcher.key !== m.key && matcher.source === m.source).length
     if (currentCount >= dataSource.selectionLimit) {
       return `Datasource (${dataSource.name}) is limited to ${dataSource.selectionLimit} items.`

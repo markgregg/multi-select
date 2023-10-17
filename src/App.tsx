@@ -7,6 +7,8 @@ import DataSource, {
 } from './component/types/DataSource'
 import Matcher from './component/types/Matcher'
 import MutliSelect from './component/MultiSelect'
+import Select from './Select'
+import { styleCodeFromTheme, styleFromTheme } from './themes'
 
 const dataSource: DataSource[] = [
   {
@@ -53,17 +55,42 @@ const dataSource: DataSource[] = [
   },
 ]
 
+const themes: string[] = [
+  'none',
+  'metallic'
+]
+
 const App = () => {
   const [matchers, setMatchers] = React.useState<Matcher[]>()
+  const [theme, setTheme] = React.useState<string>('none')
 
   return (
     <>
       <h2>MutliSelect</h2>
-      <MutliSelect
-        matchers={matchers}
-        dataSources={dataSource}
-        onMatchersChanged={setMatchers}
-      />
+      <div className='mainTheme'>
+        Themes
+        <Select
+          options={themes}
+          selection={theme}
+          onSelectOption={setTheme}
+        />
+      </div>
+      <div className='mainMultiselect'>
+        <MutliSelect
+          matchers={matchers}
+          dataSources={dataSource}
+          onMatchersChanged={setMatchers}
+          styles={styleFromTheme(theme)}
+        />
+      </div>
+      {
+        theme !== 'none' &&
+        <div className='styleContainer'>
+          <div className='mainStyle'>
+            <pre className='styleCode'>{styleCodeFromTheme(theme)}</pre>
+          </div>
+        </div>
+      }
     </>
   )
 }

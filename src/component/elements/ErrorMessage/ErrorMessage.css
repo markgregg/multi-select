@@ -5,11 +5,11 @@
   top: calc(-100% - 7px);
   left: 0px;
   width: max-content;
-  background-color: var(--errorMessageMainBackgroundColour,
+  background: var(--errorMessageMainBackgroundColor,
       rgb(255, 255, 255));
   border: var(--matcherEditOptionsBorder, 1px solid rgb(204, 204, 204));
   border-radius: 4px;
-  color: var(--errorMessageMainErrorColour, red);
+  color: var(--errorMessageMainErrorColor, red);
   font-weight: bold;
 }
 
@@ -19,5 +19,5 @@
 }
 
 .errorMessageIcon:hover {
-  color: var(--errorMessageMainErrorHoverColour, rgb(255, 124, 124));
+  color: var(--errorMessageMainErrorHoverColor, rgb(255, 124, 124));
 }

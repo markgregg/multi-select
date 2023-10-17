@@ -4,7 +4,7 @@
   padding-left: 2px;
   padding-right: 2px;
   display: flex;
-  background-color: var(--matcherViewMainBackgroundColour);
+  background: var(--matcherViewMainBackgroundColor);
 }
 
 .matcherViewToolTip {
@@ -12,14 +12,14 @@
   top: calc(-100% - 7px);
   left: 0px;
   width: max-content;
-  background-color: var(--matcherViewTooltipBackgroundColour,
+  background: var(--matcherViewTooltipBackgroundColor,
       rgb(255, 255, 255));
   border: var(--matcherEditOptionsBorder, 1px solid rgb(204, 204, 204));
   border-radius: 4px;
 }
 
 .deleteIcon {
-  color: var(--matcherViewMainDeleteIconColor, black);
+  color: var(--matcherViewMainDeleteIconColor, );
   height: 100%;
 }
 
@@ -28,5 +28,5 @@
 }
 
 .matcherViewWarning {
-  background-color: var(--matcherViewWarningBackgroundColor, orange)
+  background: var(--matcherViewWarningBackgroundColor, orange)
 }

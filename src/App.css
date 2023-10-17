@@ -36,8 +36,30 @@
   flex-grow: 1;
 }
 
-@keyframes borderFlash {
-  50% {
-    border-color: springgreen;
-  }
+.mainTheme {
+  display: flex;
+  flex-direction: row;
+  column-gap: 10px;
+  margin-bottom: 20px;
+}
+
+.mainMultiselect {
+  margin-bottom: 20px;
+}
+
+.styleContainer {
+  position: relative;
+}
+
+.mainStyle {
+  position: absolute;
+  left: 10%;
+  width: 80%;
+  border: var(--matcherEditOptionsBorder, 1px solid rgb(204, 204, 204));
+  border-radius: 4px;
+  padding: 5px;
+}
+
+.styleCode {
+  text-align: left;
 }

@@ -66,6 +66,10 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       }
     }, [isActive])
 
+    React.useEffect(() => {
+      setError(null)
+    }, [first])
+
     const checkForOperator = (searchText: string): string => {
       if (searchText.length > 2) {
         const symbol = searchText.substring(0, 3)
@@ -189,7 +193,6 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       key.current = currentKey
       const newText = event.target.value
       const allOptions: [string, Option[]][] = []
-      setError('')
       setComparison('=')
       setOperator('&')
 
@@ -288,6 +291,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     }
 
     const keyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      setError(null)
       switch (event.code) {
         case 'ArrowUp':
           if (activeOption === null) {
@@ -409,7 +413,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           error &&
           <ErrorMessage
             errorMessage={error}
-            onErrorAcknowledged={() => setError('')}
+            onErrorAcknowledged={() => setError(null)}
             style={styles?.errorMessage}
           />
         }
