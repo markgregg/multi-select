@@ -8,6 +8,8 @@
   z-index: 999;
   background: var(--matcherEditOptionsBackgroundColor,
       rgb(255, 255, 255));
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .optionListMain ul {

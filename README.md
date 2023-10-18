@@ -81,6 +81,8 @@ const App = () => {
 * defaultItemLimit - default number of items to show for each datasource in the dropdown
 * simpleOperation - only allow users to selct comparisons, no brackets or and or
 * onMatchersChanged - event for when the matchers change
+* clearIcon - alternative icon to the X
+* maxDropDownHeight - the maximium hieght of the options dropdown
 * styles - allows styles to be set for the different components
 
 ## DataSources

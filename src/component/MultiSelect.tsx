@@ -29,6 +29,7 @@ interface MultiSelectProps {
   simpleOperation?: boolean
   onMatchersChanged?: (matchers: Matcher[]) => void
   clearIcon?: React.ReactElement
+  maxDropDownHeight?: number
   styles?: MutliSelectStyles
 }
 
@@ -39,7 +40,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   simpleOperation,
   onMatchersChanged,
   clearIcon,
-  styles,
+  maxDropDownHeight,
+  styles
 }) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null)
   const editDivRef = React.useRef<HTMLDivElement | null>(null)
@@ -49,6 +51,14 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     matchers ?? [],
   )
   const [mismatchedBrackets, setMismatchedBrackets] = React.useState<number[]>([])
+  const [config] = React.useState<Config>(
+    {
+      dataSources,
+      defaultItemLimit: defaultItemLimit ?? ITEM_LIMIT,
+      simpleOperation: simpleOperation ?? false,
+      maxDropDownHeight
+    }
+  )
 
   const loseFocus = React.useCallback(() => {
     setHasFocus(false)
@@ -80,7 +90,6 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     notifyMatchersChanged(newMatchers)
     validateBrackets(newMatchers)
   }
-
 
   const updateMatcher = (matcher: Matcher): void => {
     const newMatchers = currentMatchers.map((mat) =>
@@ -204,12 +213,6 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         }
         break
     }
-  }
-
-  const config: Config = {
-    dataSources,
-    defaultItemLimit: defaultItemLimit ?? ITEM_LIMIT,
-    simpleOperation: simpleOperation ?? false
   }
 
   return (

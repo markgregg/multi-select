@@ -81,6 +81,7 @@ const App = () => {
           dataSources={dataSource}
           onMatchersChanged={setMatchers}
           styles={styleFromTheme(theme)}
+          maxDropDownHeight={120}
         />
       </div>
       {

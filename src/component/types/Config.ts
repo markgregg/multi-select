@@ -7,4 +7,5 @@ export default interface Config {
   defaultItemLimit: number
   simpleOperation: boolean
   operatorDisplay?: OperatorDisplay
+  maxDropDownHeight?: number
 }

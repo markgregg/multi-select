@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { Option, MutliSelectStyles } from '../../types'
+import { Option, MutliSelectStyles, Config } from '../../types'
+import { configContext } from '@/component/state/context'
 import './OptionList.css'
 
 interface OptionListProps {
@@ -17,6 +18,13 @@ const OptionList: React.FC<OptionListProps> = ({
   onSelectActiveOption,
   styles,
 }) => {
+  const activeItemRef = React.useRef<HTMLLIElement | null>(null)
+  const config = React.useContext<Config>(configContext)
+
+  if (activeItemRef.current && activeItemRef.current.scrollIntoView) {
+    activeItemRef.current.scrollIntoView({ behavior: "smooth" })
+  }
+
   const selectOption = (event: React.MouseEvent, option: Option) => {
     onSelectOption(option)
     event.stopPropagation()
@@ -35,6 +43,10 @@ const OptionList: React.FC<OptionListProps> = ({
             const idx = cnt++
             return (
               <li
+                ref={idx === activeOption
+                  ? activeItemRef
+                  : undefined
+                }
                 className={
                   idx === activeOption
                     ? 'optionListOption optionListActiveOption'
@@ -58,11 +70,16 @@ const OptionList: React.FC<OptionListProps> = ({
     })
   }
 
+  const listStyle = {
+    ...styles?.optionsList,
+    ...(config.maxDropDownHeight ? { maxHeight: config.maxDropDownHeight } : {})
+  }
+
   return (
     <div
       id="option_list"
       className="optionListMain"
-      style={styles?.optionsList}
+      style={listStyle}
     >
       {showOptions()}
     </div>
