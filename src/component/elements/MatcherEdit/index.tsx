@@ -197,7 +197,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       setOperator('&')
 
       let totalCount = 0
-      if (newText.length > 0) {
+      if (newText.length > (config.searchTextLength ?? 0)) {
         let searchText = newText.trim()
         if (!config.simpleOperation) {
           searchText = checkForOperator(searchText)

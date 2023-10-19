@@ -2,19 +2,20 @@ import * as React from 'react'
 import './Select.css'
 import useExternalClicks from '@/component/hooks/useExternalClicks/useExternalClicks'
 
-interface SelectProps {
-  options: string[]
-  selection: string
-  onSelectOption: (option: string) => void
+interface SelectProps<T extends string> {
+  options: T[]
+  selection: T
+  onSelectOption: (option: T) => void
 }
 
-const Select: React.FC<SelectProps> = ({
-  options,
-  selection,
-  onSelectOption
-}) => {
+const Select = <T extends string,>(props: SelectProps<T>) => {
+  const {
+    options,
+    selection,
+    onSelectOption
+  } = props
   const divRef = React.useRef<HTMLDivElement | null>(null)
-  const [selected, setSelected] = React.useState<string>(selection)
+  const [selected, setSelected] = React.useState<T>(selection)
   const [optionsVisible, setOptionsVisible] = React.useState<boolean>(false)
 
   const lostFocus = React.useCallback(() => {
@@ -23,7 +24,7 @@ const Select: React.FC<SelectProps> = ({
 
   useExternalClicks(divRef.current, lostFocus)
 
-  const selectOption = (e: React.MouseEvent, option: string) => {
+  const selectOption = (e: React.MouseEvent, option: T) => {
     setSelected(option)
     setOptionsVisible(false)
     onSelectOption(option)

@@ -83,6 +83,8 @@ const App = () => {
 * onMatchersChanged - event for when the matchers change
 * clearIcon - alternative icon to the X
 * maxDropDownHeight - the maximium hieght of the options dropdown
+* minDropDownWidth - the minimum width of the option dropdown
+* searchTextLength - the length of text at which to look for matches
 * styles - allows styles to be set for the different components
 
 ## DataSources
@@ -202,6 +204,7 @@ The following components can be styled
 * icon hover color - --errorMessageMainErrorHoverColor, default=rgb(255, 124, 124)
 
 #### Option List
+* color - --matcherEditOptionsColor, default=black
 * border - --matcherEditOptionsBorder, default=1px solid rgb(204, 204, 204)
 * background-color - --matcherEditOptionsBackgroundColor, default=rgb(255, 255, 255)
 * active opton background - --optionListActiveOption, default=lightgray

@@ -4,6 +4,7 @@
   border-radius: 4px;
   padding-left: 5px;
   padding-right: 5px;
+  width: 100px;
 }
 
 .selectMainOptionList {
@@ -14,8 +15,8 @@
   animation: growDown 400ms ease-in-out forwards;
   transform-origin: top center;
   z-index: 999;
-  background-color: var(--matcherEditOptionsBackgroundColor,
-      rgb(255, 255, 255));
+  background-color: var(--matcherEditOptionsBackgroundColor, rgb(255, 255, 255));
+  width: 100px;
 }
 
 .selectMain ul {

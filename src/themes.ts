@@ -1,5 +1,11 @@
 import { MutliSelectStyles } from "./component/types";
 
+export type Theme = 'none' | 'metallic'
+export const themes: Theme[] = [
+  'none',
+  'metallic'
+]
+
 export const metallicTheme: MutliSelectStyles = {
   mutliSelect: {
     borderBottom: '#00468C 1px solid',
@@ -39,6 +45,15 @@ export const metallicTheme: MutliSelectStyles = {
     borderRight: '#00468C 1px solid',
     borderTop: 'white 1px solid;',
     borderLeft: 'white 1px solid',
+  }
+}
+
+export const bodyStyleFromTheme = (theme: string): React.CSSProperties | undefined => {
+  if (theme === 'metallic') {
+    return {
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
+    }
+    return undefined
   }
 }
 

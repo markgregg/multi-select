@@ -30,6 +30,8 @@ interface MultiSelectProps {
   onMatchersChanged?: (matchers: Matcher[]) => void
   clearIcon?: React.ReactElement
   maxDropDownHeight?: number
+  minDropDownWidth?: number
+  searchTextLength?: number
   styles?: MutliSelectStyles
 }
 
@@ -41,6 +43,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   onMatchersChanged,
   clearIcon,
   maxDropDownHeight,
+  minDropDownWidth,
+  searchTextLength,
   styles
 }) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null)
@@ -51,14 +55,16 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     matchers ?? [],
   )
   const [mismatchedBrackets, setMismatchedBrackets] = React.useState<number[]>([])
-  const [config] = React.useState<Config>(
-    {
+  const config = React.useMemo<Config>(() => {
+    return {
       dataSources,
       defaultItemLimit: defaultItemLimit ?? ITEM_LIMIT,
       simpleOperation: simpleOperation ?? false,
-      maxDropDownHeight
+      maxDropDownHeight,
+      minDropDownWidth,
+      searchTextLength
     }
-  )
+  }, [dataSources, defaultItemLimit, simpleOperation, maxDropDownHeight, minDropDownWidth, searchTextLength])
 
   const loseFocus = React.useCallback(() => {
     setHasFocus(false)

@@ -8,4 +8,6 @@ export default interface Config {
   simpleOperation: boolean
   operatorDisplay?: OperatorDisplay
   maxDropDownHeight?: number
+  minDropDownWidth?: number
+  searchTextLength?: number
 }

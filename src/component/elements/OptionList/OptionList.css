@@ -1,6 +1,7 @@
 .optionListMain {
   position: absolute;
   top: calc(100% + 5px);
+  color: var(--matcherEditOptionsColor, black);
   border: var(--matcherEditOptionsBorder, 1px solid rgb(204, 204, 204));
   border-radius: 4px;
   animation: growDown 300ms ease-in-out forwards;

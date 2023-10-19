@@ -21,9 +21,11 @@ const OptionList: React.FC<OptionListProps> = ({
   const activeItemRef = React.useRef<HTMLLIElement | null>(null)
   const config = React.useContext<Config>(configContext)
 
-  if (activeItemRef.current && activeItemRef.current.scrollIntoView) {
-    activeItemRef.current.scrollIntoView({ behavior: "smooth" })
-  }
+  React.useEffect(() => {
+    if (activeItemRef.current && activeItemRef.current.scrollIntoView) {
+      activeItemRef.current.scrollIntoView({ block: "end", behavior: "smooth" })
+    }
+  }, [activeOption])
 
   const selectOption = (event: React.MouseEvent, option: Option) => {
     onSelectOption(option)
@@ -72,7 +74,8 @@ const OptionList: React.FC<OptionListProps> = ({
 
   const listStyle = {
     ...styles?.optionsList,
-    ...(config.maxDropDownHeight ? { maxHeight: config.maxDropDownHeight } : {})
+    ...(config.maxDropDownHeight ? { maxHeight: config.maxDropDownHeight } : {}),
+    ...(config.minDropDownWidth ? { minWidth: config.minDropDownWidth } : {})
   }
 
   return (
