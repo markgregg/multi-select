@@ -109,16 +109,7 @@ export const styleCodeFromTheme = (theme: string): string => {
   return ''
 }
 
-type AgProperties = React.CSSProperties | {
-  '--ag-foreground-color': string,
-  '--ag-background-color': string,
-  '--ag-header-foreground-color': string,
-  '--ag-header-background-color': string,
-  '--ag-odd-row-background-color': string,
-  '--ag-header-column-resize-handle-color': string
-}
-
-export const getAgGridStyle = (theme: string): AgProperties => {
+export const getAgGridStyle = (theme: string): any => {
   if (theme === 'metallic') {
     return {
       '--ag-foreground-color': 'white',
