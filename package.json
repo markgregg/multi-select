@@ -8,8 +8,8 @@
     "mutli",
     "universal",
     "UI",
-    "xpressions",
-    "regex"
+    "regex",
+    "ag-grid"
   ],
   "author": "Mark Gregg <gregg.mark@gmail.com> (https://github.com/markgregg)",
   "license": "MIT",
