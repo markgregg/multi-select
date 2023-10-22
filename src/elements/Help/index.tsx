@@ -20,7 +20,7 @@ const Help: React.FC<HelpProps> = ({ theme }) => {
   useExternalClicks(divRef.current, hideHelp)
 
   const toggleHelp = () => {
-    setShowHelp(!showHelp)
+    setShowHelp(show => !show)
   }
 
   const activeStyle: React.CSSProperties = {
@@ -30,13 +30,13 @@ const Help: React.FC<HelpProps> = ({ theme }) => {
 
   return (
     <div
+      ref={divRef}
       className='helpIcon'
     >
       <TbHelpSquareRoundedFilled onClick={toggleHelp} />
       {
         showHelp &&
         <div
-          ref={divRef}
           className='helpInstructions'
           style={bodyStyleFromTheme(theme)}
         >
