@@ -17,7 +17,8 @@ interface MatcherEditProps {
   onValidate: (matcher: Matcher) => string | null
   onFocus?: () => void
   onCancel?: () => void
-  onEditPrevious?: () => void
+  onEditPrevious: () => void
+  onEditNext: () => void
   inFocus?: boolean
   first: boolean
   isActive?: boolean
@@ -33,6 +34,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       onFocus,
       onCancel,
       onEditPrevious,
+      onEditNext,
       inFocus,
       first,
       isActive,
@@ -96,7 +98,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const checkForComparison = (searchText: string): string | null => {
       if (searchText.length > 1) {
         const symbol = searchText.substring(0, 2)
-        if (symbol === '>=' || symbol === '<=' || symbol === '!*') {
+        if (symbol === '>=' || symbol === '<=' || symbol === '!*' || symbol === '<*' || symbol === '>*') {
           setComparison(symbol)
           return searchText.substring(2).trim()
         }
@@ -126,7 +128,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       ds: DataSourceLookup,
       allOptions: [string, Option[]][],
     ): number => {
-      const options: Option[] = items
+      let options: Option[] = items
         .map((item) => {
           return {
             source: ds.name,
@@ -140,7 +142,9 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
                 : item.toString(),
           }
         })
-        .slice(0, ds.itemLimit ?? config.defaultItemLimit)
+      if (options.length > (ds.itemLimit ?? config.defaultItemLimit)) {
+        options = options.slice(0, ds.itemLimit ?? config.defaultItemLimit)
+      }
       if (options.length > 0) {
         addOptions(allOptions, ds, options)
       }
@@ -197,7 +201,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       setOperator('&')
 
       let totalCount = 0
-      if (newText.length > (config.searchTextLength ?? 0)) {
+      if (newText.length > 0) {
         let searchText = newText.trim()
         if (!config.simpleOperation) {
           searchText = checkForOperator(searchText)
@@ -207,25 +211,27 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           return
         }
         searchText = result
-        if (searchText.length > 0) {
+        if (searchText.length > (config.searchStartLength ?? 0)) {
           config.dataSources.forEach((ds) => {
             if ('source' in ds) {
-              if (typeof ds.source === 'function') {
-                ds.source(searchText).then((items) => {
+              if (searchText.length > (ds.searchStartLength ?? 0)) {
+                if (typeof ds.source === 'function') {
+                  ds.source(searchText).then((items) => {
+                    if (currentKey === key.current) {
+                      totalCount += updateOptions(items, ds, allOptions)
+                      updateState(allOptions, totalCount)
+                    }
+                  })
+                } else {
                   if (currentKey === key.current) {
-                    totalCount += updateOptions(items, ds, allOptions)
-                    updateState(allOptions, totalCount)
+                    totalCount += updateOptions(
+                      ds.source.filter((item) =>
+                        matchItems(item, ds, searchText),
+                      ),
+                      ds,
+                      allOptions,
+                    )
                   }
-                })
-              } else {
-                if (currentKey === key.current) {
-                  totalCount += updateOptions(
-                    ds.source.filter((item) =>
-                      matchItems(item, ds, searchText),
-                    ),
-                    ds,
-                    allOptions,
-                  )
                 }
               }
             } else if (
@@ -293,6 +299,24 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const keyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
       setError(null)
       switch (event.code) {
+        case 'ArrowLeft':
+          if (inputRef.current &&
+            !event.ctrlKey &&
+            !event.shiftKey &&
+            event.currentTarget.selectionStart === 0) {
+            onEditPrevious()
+            event.preventDefault()
+          }
+          break
+        case 'ArrowRight':
+          if (inputRef.current &&
+            !event.ctrlKey &&
+            !event.shiftKey &&
+            event.currentTarget.selectionStart === event.currentTarget.value.length) {
+            onEditNext()
+            event.preventDefault()
+          }
+          break
         case 'ArrowUp':
           if (activeOption === null) {
             setActiveOption(totalOptions - 1)

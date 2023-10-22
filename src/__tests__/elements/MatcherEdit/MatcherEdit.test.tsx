@@ -201,6 +201,31 @@ describe('MatcherEdit', () => {
     expect(editPrevious).toBeTruthy()
   })
 
+  it('Arrow Edit Previous', async () => {
+    let editPrevious = false
+    const result = createMatcherEdit(true, singleMatcher[0], {
+      isActive: true,
+      onEditPrevious: () => (editPrevious = true),
+    })
+    const element = result.container.querySelector('#test_input')
+    expect(element).toBeDefined()
+    element && fireEvent.change(element, { target: { value: '' } })
+    element && fireEvent.keyDown(element, { code: 'ArrowLeft' })
+    expect(editPrevious).toBeTruthy()
+  })
+
+  it('Arrow Edit Next', async () => {
+    let editNext = false
+    const result = createMatcherEdit(true, singleMatcher[0], {
+      isActive: true,
+      onEditNext: () => (editNext = true),
+    })
+    const element = result.container.querySelector('#test_input')
+    expect(element).toBeDefined()
+    element && fireEvent.keyDown(element, { code: 'ArrowRight' })
+    expect(editNext).toBeTruthy()
+  })
+
   it('onFocus', () => {
     let hasFocus = false
     const result = createMatcherEdit(true, undefined, {
@@ -328,6 +353,7 @@ const createMatcherEdit = (
     onFocus?: () => void
     onCancel?: () => void
     onEditPrevious?: () => void
+    onEditNext?: () => void
     config?: Config
   }
 ) => {
@@ -349,7 +375,8 @@ const createMatcherEdit = (
           }
           onFocus={options?.onFocus}
           onCancel={options?.onCancel}
-          onEditPrevious={options?.onEditPrevious}
+          onEditPrevious={options?.onEditPrevious ?? (() => console.log("prev"))}
+          onEditNext={options?.onEditNext ?? (() => console.log("prev"))}
           inFocus={options?.inFocus}
           first={first}
           isActive={options?.isActive}

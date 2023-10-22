@@ -67,6 +67,24 @@ describe('MultiSelect', () => {
     expect(label?.textContent).toBe(text)
   })
 
+  it('left arrow, moves to previous', async () => {
+    const result = createMultiSelect(multipleMatchers)
+    const element = result.container.querySelector('#MultiSelect')
+    expect(element).toBeDefined()
+    element && fireEvent.keyDown(element, {
+      code: 'ArrowLeft',
+      shiftKey: true,
+    })
+    const input3 = result.container.querySelector('#test3_input')
+    expect(input3).toHaveValue('& =text3')
+    input3 && fireEvent.change(input3, { target: { value: '' } })
+    input3 && fireEvent.keyDown(input3, {
+      code: 'ArrowLeft',
+    })
+    const input2 = result.container.querySelector('#test2_input')
+    expect(input2).toHaveValue('| =text2')
+  })
+
   it('shift left arrow, moves to previous', async () => {
     const result = createMultiSelect(multipleMatchers)
     const element = result.container.querySelector('#MultiSelect')
@@ -77,6 +95,23 @@ describe('MultiSelect', () => {
     })
     const input3 = result.container.querySelector('#test3_input')
     expect(input3).toHaveValue('& =text3')
+  })
+
+  it('right arrow, moves to next', async () => {
+    const result = createMultiSelect(multipleMatchers)
+    const element = result.container.querySelector('#MultiSelect')
+    expect(element).toBeDefined()
+    element && fireEvent.keyDown(element, {
+      code: 'ArrowRight',
+      shiftKey: true,
+    })
+    const input = result.container.querySelector('#test_input')
+    expect(input).toHaveValue('=text')
+    input && fireEvent.keyDown(input, {
+      code: 'ArrowRight',
+    })
+    const input2 = result.container.querySelector('#test2_input')
+    expect(input2).toHaveValue('| =text2')
   })
 
   it('shift right arrow, moves to next', async () => {

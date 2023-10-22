@@ -11,7 +11,7 @@ export interface DataSourceBase {
 }
 
 export const defaultComparison: Comparison[] = ['=', '!']
-export const stringComparisons: Comparison[] = ['=', '!', '*', '!*']
+export const stringComparisons: Comparison[] = ['=', '!', '*', '!*', '<*', '>*']
 export const numberComparisons: Comparison[] = ['=', '>', '<', '>=', '<=', '!']
 
 export interface DataSourceLookup extends DataSourceBase {
@@ -20,6 +20,7 @@ export interface DataSourceLookup extends DataSourceBase {
   valueGetter?: (item: object) => Value
   ignoreCase?: boolean
   itemLimit?: number
+  searchStartLength?: number
 }
 
 export interface DataSourceValue extends DataSourceBase {

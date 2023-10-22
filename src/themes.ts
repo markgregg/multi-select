@@ -1,4 +1,4 @@
-import { MutliSelectStyles } from "./component/types";
+import { MutliSelectStyles } from './component/types';
 
 export type Theme = 'none' | 'metallic'
 export const themes: Theme[] = [
@@ -10,7 +10,7 @@ export const metallicTheme: MutliSelectStyles = {
   mutliSelect: {
     borderBottom: '#00468C 1px solid',
     borderRight: '#00468C 1px solid',
-    borderTop: 'white 1px solid;',
+    borderTop: 'white 1px solid',
     borderLeft: 'white 1px solid',
     background: 'linear-gradient(to left top, #00468C, #C3CDE6)',
     color: 'white'
@@ -107,4 +107,27 @@ export const styleCodeFromTheme = (theme: string): string => {
     }`
   }
   return ''
+}
+
+type AgProperties = React.CSSProperties | {
+  '--ag-foreground-color': string,
+  '--ag-background-color': string,
+  '--ag-header-foreground-color': string,
+  '--ag-header-background-color': string,
+  '--ag-odd-row-background-color': string,
+  '--ag-header-column-resize-handle-color': string
+}
+
+export const getAgGridStyle = (theme: string): AgProperties => {
+  if (theme === 'metallic') {
+    return {
+      '--ag-foreground-color': 'white',
+      '--ag-background-color': '#416488',
+      '--ag-header-foreground-color': 'white',
+      '--ag-header-background-color': '#16518d',
+      '--ag-odd-row-background-color': '#2e5b87',
+      '--ag-header-column-resize-handle-color': '#042e58'
+    }
+  }
+  return {}
 }

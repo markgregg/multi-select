@@ -9,5 +9,5 @@ export default interface Config {
   operatorDisplay?: OperatorDisplay
   maxDropDownHeight?: number
   minDropDownWidth?: number
-  searchTextLength?: number
+  searchStartLength?: number
 }

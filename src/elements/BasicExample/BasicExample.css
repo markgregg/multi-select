@@ -1,5 +1,12 @@
+.mainMultiselectContainer {
+  display: flex;
+  flex-direction: row;
+  column-gap: 10px;
+}
+
 .mainMultiselect {
   margin-bottom: 20px;
+  flex-grow: 1;
 }
 
 .styleContainer {

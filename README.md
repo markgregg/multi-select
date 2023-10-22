@@ -84,7 +84,7 @@ const App = () => {
 * clearIcon - alternative icon to the X
 * maxDropDownHeight - the maximium hieght of the options dropdown
 * minDropDownWidth - the minimum width of the option dropdown
-* searchTextLength - the length of text at which to look for matches
+* searchStartLength - the length of text at which to look for matches
 * styles - allows styles to be set for the different components
 
 ## DataSources
@@ -99,12 +99,14 @@ textGetter?: (item: object) => string
 valueGetter?: (item: object) => Value
 ignoreCase?: boolean
 itemLimit?: number
+searchStartLength?: number
 ```
 * Source - either a list of strings/objects, or a promise that returns a list of strings/objects
 * textGetter - if the source is an object, then this is a function to extract the display texst
 * valueGetter - if the source is an object, then this is a function to extract the value
 * ignoreCase - a boolean value to indicate if case is ignored when matching items
 * itemLimit - the maximium number of matches to shouw ina dropdown
+* searchStartLength - the text length required before datas source is searched
 
 ### Match
 
@@ -129,6 +131,8 @@ or |  the comparisons on either side can be true
 <=  value must equal to or less than the matcher
 *   value must be like the matcher
 !*  value must not be like the matcher
+<*  value starts with
+>*  value ends with
 
 (   open bracket
 )   close bracket

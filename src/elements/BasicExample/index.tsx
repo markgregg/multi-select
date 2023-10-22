@@ -3,6 +3,7 @@ import { Theme, styleCodeFromTheme, styleFromTheme } from "@/themes"
 import { DataSource, Matcher, defaultComparison, numberComparisons, stringComparisons } from '@/component/types'
 import MultiSelect from '@/component/MultiSelect'
 import './BasicExample.css'
+import Help from '../Help'
 
 interface BasicExampleProps {
   theme: Theme
@@ -14,7 +15,6 @@ const dataSource: DataSource[] = [
     title: 'list of strings',
     comparisons: defaultComparison,
     precedence: 1,
-    selectionLimit: 2,
     source: ['asdas', 'assda', 'loadsp'],
   },
   {
@@ -58,14 +58,16 @@ const BasicExample: React.FC<BasicExampleProps> = ({ theme }) => {
 
   return (
     <div>
-      <div className='mainMultiselect'>
-        <MultiSelect
-          matchers={matchers}
-          dataSources={dataSource}
-          onMatchersChanged={setMatchers}
-          styles={styleFromTheme(theme)}
-          maxDropDownHeight={120}
-        />
+      <div className='mainMultiselectContainer'>
+        <div className='mainMultiselect'>
+          <MultiSelect
+            matchers={matchers}
+            dataSources={dataSource}
+            onMatchersChanged={setMatchers}
+            styles={styleFromTheme(theme)}
+          />
+        </div>
+        <Help theme={theme} />
       </div>
       {
         theme !== 'none' &&
@@ -75,6 +77,7 @@ const BasicExample: React.FC<BasicExampleProps> = ({ theme }) => {
           </div>
         </div>
       }
+
     </div>
   )
 }

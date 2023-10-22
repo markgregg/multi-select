@@ -1,4 +1,4 @@
-export type Comparison = '=' | '>' | '<' | '>=' | '<=' | '!' | '*' | '!*' | '(' | ')'
+export type Comparison = '=' | '>' | '<' | '>=' | '<=' | '!' | '*' | '!*' | '(' | ')' | '<*' | '>*'
 export type Operator = '&' | '|' | ''
 export type Value = string | number | Date
 

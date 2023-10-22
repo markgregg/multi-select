@@ -31,7 +31,7 @@ interface MultiSelectProps {
   clearIcon?: React.ReactElement
   maxDropDownHeight?: number
   minDropDownWidth?: number
-  searchTextLength?: number
+  searchStartLength?: number
   styles?: MutliSelectStyles
 }
 
@@ -44,7 +44,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   clearIcon,
   maxDropDownHeight,
   minDropDownWidth,
-  searchTextLength,
+  searchStartLength,
   styles
 }) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null)
@@ -62,9 +62,9 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       simpleOperation: simpleOperation ?? false,
       maxDropDownHeight,
       minDropDownWidth,
-      searchTextLength
+      searchStartLength
     }
-  }, [dataSources, defaultItemLimit, simpleOperation, maxDropDownHeight, minDropDownWidth, searchTextLength])
+  }, [dataSources, defaultItemLimit, simpleOperation, maxDropDownHeight, minDropDownWidth, searchStartLength])
 
   const loseFocus = React.useCallback(() => {
     setHasFocus(false)
@@ -118,7 +118,21 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
   const editLast = () => {
     if (currentMatchers.length > 0) {
-      setActiveMatcher(currentMatchers.length - 1)
+      if (activeMatcher === null) {
+        setActiveMatcher(currentMatchers.length - 1)
+      } else {
+        if (activeMatcher > 0) {
+          setActiveMatcher(activeMatcher - 1)
+        }
+      }
+    }
+  }
+
+  const editNext = () => {
+    if (currentMatchers.length > 0 &&
+      activeMatcher !== null &&
+      activeMatcher < currentMatchers.length - 1) {
+      setActiveMatcher(activeMatcher + 1)
     }
   }
 
@@ -254,6 +268,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 onSelect={() => selectMatcher(index)}
                 onCancel={() => setActiveMatcher(null)}
                 onSwapMatcher={swapMatchers}
+                onEditPrevious={editLast}
+                onEditNext={editNext}
                 selected={index === activeMatcher}
                 first={index === 0 || currentMatchers[index - 1].comparison === '('}
                 hideOperators={simpleOperation}
@@ -272,6 +288,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
               first={currentMatchers.length === 0}
               isActive={activeMatcher === null}
               onEditPrevious={editLast}
+              onEditNext={editNext}
               styles={styles}
             />
           }

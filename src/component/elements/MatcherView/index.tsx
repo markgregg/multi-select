@@ -14,6 +14,8 @@ interface MatcherViewProps {
   onSelect: () => void
   onCancel: () => void
   onSwapMatcher: (matcher: Matcher, swapMatcher: Matcher) => void
+  onEditPrevious: () => void
+  onEditNext: () => void
   selected?: boolean
   first: boolean
   hideOperators?: boolean
@@ -38,6 +40,8 @@ const MatcherView: React.FC<MatcherViewProps> = ({
   onSelect,
   onCancel,
   onSwapMatcher,
+  onEditPrevious,
+  onEditNext,
   selected,
   first,
   hideOperators,
@@ -126,6 +130,8 @@ const MatcherView: React.FC<MatcherViewProps> = ({
           first={first}
           styles={styles}
           isActive={selected}
+          onEditNext={onEditNext}
+          onEditPrevious={onEditPrevious}
         />
       ) : (
         <>

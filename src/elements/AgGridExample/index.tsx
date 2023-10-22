@@ -1,14 +1,16 @@
 import * as React from 'react'
-import { Theme, styleFromTheme } from "@/themes"
+import { Theme, getAgGridStyle, styleFromTheme } from "@/themes"
 import { DataSource, Matcher, SourceItem, defaultComparison, numberComparisons, stringComparisons } from '@/component/types'
 import MultiSelect from '@/component/MultiSelect'
 import { AgGridReact } from "ag-grid-react";
 import { fetchBondsAndCache } from '@/services/bondsService';
 import Bond from '@/types/Bond';
-import { ColDef } from 'ag-grid-community';
+import { ColDef, IRowNode } from 'ag-grid-community';
+import { createFilter } from '@/types/AgFilter';
 import './AgGridExample.css'
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+
 
 interface AgGridExampleProps {
   theme: Theme
@@ -18,7 +20,26 @@ const isUnique = (value: string, index: number, array: string[]) => {
   return array.indexOf(value) === index;
 }
 
+const formatDate = (date: Date): string => date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
+
+const extractDate = (text: string) => {
+  const dt = new Date()
+  const value = parseInt(text.substring(0, text.length - 1))
+  const postFix = text.substring(text.length - 1)
+  if (postFix === 'y' || postFix === 'Y') {
+    dt.setFullYear(dt.getFullYear() + value)
+    return formatDate(dt)
+  } else {
+    const addYears = (value + dt.getMonth()) / 12
+    const months = (value + dt.getMonth()) % 12
+    dt.setFullYear(dt.getFullYear() + addYears)
+    dt.setMonth(months)
+    return formatDate(dt)
+  }
+}
+
 const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
+  const agGridRef = React.useRef<AgGridReact<Bond> | null>(null)
   const [matchers, setMatchers] = React.useState<Matcher[]>()
   const [rowData, setRowData] = React.useState<Bond[]>();
   const [columnDefs] = React.useState<ColDef<Bond>[]>([
@@ -30,14 +51,26 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
     { field: "issuer", filter: 'agTextColumnFilter', sortable: true, resizable: true },
     { field: "hairCut", filter: 'agNumberColumnFilter', sortable: true, resizable: true },
   ]);
+  const [filterSources, setFilterSources] = React.useState<string[]>([])
 
-  const filterBonds = React.useCallback((text: string, field: 'isin' | 'currency'): SourceItem[] => {
-    return rowData
-      ?.filter(item => item[field].toUpperCase().includes(text.toUpperCase()))
-      ?.map(item => item[field])
-      ?.filter(isUnique)
-      ?? []
-  }, [rowData])
+  const findItems = React.useCallback((text: string, field: 'isin' | 'currency'): SourceItem[] => {
+    const uniqueItems = new Set<string>()
+    const callback = (row: IRowNode<Bond>) => {
+      if (row.data) {
+        const value = row.data[field];
+        if (value &&
+          value.toUpperCase().includes(text.toUpperCase())) {
+          uniqueItems.add(value);
+        }
+      }
+    }
+    agGridRef.current?.api.forEachNodeAfterFilter(callback);
+    let items = [...uniqueItems].sort();
+    if (items.length > 10) {
+      items = items?.slice(10)
+    }
+    return items
+  }, [])
 
   const dataSource = React.useMemo<DataSource[]>(() => [
     {
@@ -46,12 +79,14 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
       comparisons: defaultComparison,
       precedence: 3,
       ignoreCase: true,
+      searchStartLength: 1,
+      selectionLimit: 2,
       source: async (text) => new Promise((resolve) => {
         setTimeout(
           () =>
-            resolve(filterBonds(text, 'isin')
+            resolve(findItems(text, 'isin')
             ),
-          1,
+          5,
         )
       })
     },
@@ -61,12 +96,13 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
       comparisons: defaultComparison,
       precedence: 2,
       ignoreCase: true,
+      selectionLimit: 2,
       source: async (text) => new Promise((resolve) => {
         setTimeout(
           () =>
-            resolve(filterBonds(text, 'currency')
+            resolve(findItems(text, 'currency')
             ),
-          1,
+          5,
         )
       })
     },
@@ -74,15 +110,19 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
       name: 'Coupon',
       title: 'Coupon',
       comparisons: numberComparisons,
+      precedence: 1,
+      selectionLimit: 2,
       match: (text: string) => !isNaN(Number(text)),
-      value: (text: string) => Number.parseInt(text),
+      value: (text: string) => Number.parseFloat(text),
     },
     {
       name: 'HairCut',
       title: 'Hair Cut',
       comparisons: numberComparisons,
+      precedence: 1,
+      selectionLimit: 2,
       match: (text: string) => !isNaN(Number(text)),
-      value: (text: string) => Number.parseInt(text),
+      value: (text: string) => Number.parseFloat(text),
     },
     {
       name: 'Issuer',
@@ -90,31 +130,30 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
       comparisons: stringComparisons,
       precedence: 1,
       ignoreCase: true,
+      selectionLimit: 2,
       match: /^[a-zA-Z]{2,}$/,
       value: (text: string) => text,
     },
     {
       name: 'MaturityDate',
       title: 'Maturity Date',
-      comparisons: stringComparisons,
-      precedence: 2,
+      comparisons: numberComparisons,
+      precedence: 4,
+      selectionLimit: 2,
       match: /^[0-9]{0,2}[yYmM]$/,
-      value: (text: string) => {
-        const now = new Date();
-        const value = parseInt(text.substring(0, text.length - 1));
-        const postFix = text.substring(text.length - 1)
-        if (postFix === 'y' || postFix === 'Y') {
-          return new Date(now.setFullYear(now.getFullYear() + value));
-        } else {
-          const addYears = (value + now.getMonth()) / 12
-          const months = (value + now.getMonth()) % 12
-          const dt = new Date(now.setFullYear(now.getFullYear() + addYears))
-          return new Date(dt.setMonth(months))
-        }
-      },
+      value: (text: string) => extractDate(text),
+    },
+    {
+      name: 'IssueDate',
+      title: 'Issue Date',
+      comparisons: numberComparisons,
+      precedence: 3,
+      selectionLimit: 2,
+      match: /^[0-9]{0,2}[yYmM]$/,
+      value: (text: string) => extractDate(text),
     },
   ],
-    [filterBonds]
+    [findItems]
   )
 
   React.useEffect(() => {
@@ -132,21 +171,61 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
       })
   }, [])
 
+  const getColumn = (source: string): string => {
+    switch (source) {
+      case 'MaturityDate':
+        return 'maturityDate';
+      case 'IssueDate':
+        return 'issueDate';
+      case 'HairCut':
+        return 'hairCut';
+    }
+    return source.toLowerCase()
+  }
+
+  const matchersChanged = (newMatchers: Matcher[]) => {
+    const sources = newMatchers.map(m => m.source).filter(isUnique)
+    sources.forEach(source => {
+      const column = getColumn(source)
+      const values = newMatchers.filter(m => m.source === source)
+      const filter = createFilter(values)
+      const instance = agGridRef.current?.api.getFilterInstance(column)
+      if (instance) {
+        instance?.setModel(filter)
+      }
+    })
+    filterSources.filter(source => !sources.includes(source))
+      .forEach(source => {
+        const instance = agGridRef.current?.api.getFilterInstance(getColumn(source))
+        if (instance) {
+          instance?.setModel(null)
+        }
+      })
+    agGridRef.current?.api.onFilterChanged()
+    setFilterSources(sources)
+    setMatchers(newMatchers)
+  }
+
   return (
     <div>
       <div className='mainMultiselect'>
         <MultiSelect
           matchers={matchers}
           dataSources={dataSource}
-          onMatchersChanged={setMatchers}
+          onMatchersChanged={matchersChanged}
           styles={styleFromTheme(theme)}
           maxDropDownHeight={120}
         />
       </div>
-      <div className="ag-theme-alpine agGrid">
+      <div
+        className="ag-theme-alpine agGrid"
+        style={getAgGridStyle(theme)}
+      >
         <AgGridReact
+          ref={agGridRef}
           rowData={rowData}
           columnDefs={columnDefs}>
+          enableAdvancedFilter={true}
         </AgGridReact>
       </div>
     </div>
