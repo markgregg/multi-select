@@ -2,10 +2,11 @@
   display: flex;
   flex-direction: row;
   column-gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .mainMultiselect {
-  margin-bottom: 20px;
   flex-grow: 1;
 }
 

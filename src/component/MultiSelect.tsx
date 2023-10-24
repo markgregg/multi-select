@@ -279,14 +279,14 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             ))
           }
           {
-            <MatcherEdit
+            activeMatcher === null && <MatcherEdit
               ref={inputRef}
               onMatcherChanged={addMatcher}
               onValidate={m => validateMatcher(currentMatchers, dataSources, m)}
               onFocus={inputFocus}
               inFocus={activeMatcher === null}
               first={currentMatchers.length === 0}
-              isActive={activeMatcher === null}
+              isActive={true}
               onEditPrevious={editLast}
               onEditNext={editNext}
               styles={styles}

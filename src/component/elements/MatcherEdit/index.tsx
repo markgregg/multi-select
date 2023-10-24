@@ -17,7 +17,7 @@ interface MatcherEditProps {
   onValidate: (matcher: Matcher) => string | null
   onFocus?: () => void
   onCancel?: () => void
-  onEditPrevious: () => void
+  onEditPrevious: (deleting: boolean) => void
   onEditNext: () => void
   inFocus?: boolean
   first: boolean
@@ -304,7 +304,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
             !event.ctrlKey &&
             !event.shiftKey &&
             event.currentTarget.selectionStart === 0) {
-            onEditPrevious()
+            onEditPrevious(false)
             event.preventDefault()
           }
           break
@@ -374,7 +374,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
         case 'Backspace':
           if (text.length === 0) {
             if (onEditPrevious && !event.shiftKey && !event.ctrlKey) {
-              onEditPrevious()
+              onEditPrevious(true)
             } else if (onCancel) { //not standalone edit
               selectOption()
             }

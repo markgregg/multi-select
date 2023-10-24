@@ -63,6 +63,14 @@ const MatcherView: React.FC<MatcherViewProps> = ({
     }
   }, [selected, showDelete])
 
+  const editPrevious = (deleting: boolean) => {
+    if (deleting) {
+      onDelete()
+    } else {
+      onEditPrevious()
+    }
+
+  }
   const deleteMatcher = (event: React.MouseEvent) => {
     onDelete()
     event.stopPropagation()
@@ -131,7 +139,7 @@ const MatcherView: React.FC<MatcherViewProps> = ({
           styles={styles}
           isActive={selected}
           onEditNext={onEditNext}
-          onEditPrevious={onEditPrevious}
+          onEditPrevious={editPrevious}
         />
       ) : (
         <>
