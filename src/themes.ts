@@ -33,6 +33,10 @@ export const metallicTheme: MutliSelectStyles = {
   optionCategory: {
     background: '#00468C'
   },
+  matcherView: {
+    backgroundColor: '#16518d',
+    borderRadius: '4px'
+  },
   matcherToolTip: {
     borderBottom: '#00468C 1px solid',
     borderRight: '#00468C 1px solid',
@@ -91,6 +95,10 @@ export const styleCodeFromTheme = (theme: string): string => {
     },
     optionCategory: {
       background: '#00468C'
+    },
+    matcherView: {
+      backgroundColor: '#16518d',
+      borderRadius: '4px'
     },
     matcherToolTip: {
       borderBottom: '#00468C 1px solid',

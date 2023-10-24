@@ -2,7 +2,7 @@
 
 MultiSelect is a select component that can lookup or match text as a user types. MultiSelect will search across multiple sources and show matches in a dropdown list. It is intended to be an alternative to having multiple select components, and supports and/or opertions and multiple comparison types.
 
-[Demo page](https://markgregg.github.io/multi-select-example/)
+Visit the [Demo page](https://markgregg.github.io/multi-select-example/)
 
 ## To install
 
