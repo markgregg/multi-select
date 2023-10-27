@@ -56,9 +56,9 @@ const getTextComparisonType = (comparison: Comparison):
       return 'contains';
     case '!*':
       return 'notContains';
-    case '<*':
-      return 'startsWith';
     case '>*':
+      return 'startsWith';
+    case '<*':
       return 'endsWith';
     default:
       return 'equals';

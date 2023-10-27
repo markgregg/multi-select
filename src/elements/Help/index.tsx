@@ -63,8 +63,8 @@ const Help: React.FC<HelpProps> = ({ theme }) => {
               &#60;=  value must equal to or less than the matcher<br />
               *   value must be like the matcher<br />
               !*  value must not be like the matcher<br />
-              &#60;*  value starts with<br />
-              &#62;*  value ends with<br />
+              &#60;*  value ends with<br />
+              &#62;*  value starts with<br />
               <br />
               (   open bracket<br />
               )   close bracket<br />

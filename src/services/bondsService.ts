@@ -6,7 +6,7 @@ export const fetchBondsAndCache = (): Promise<Bond[]> => {
     new Promise<Bond[]>(resolve => resolve(bondCache))
   }
 
-  return getData<Bond[]>('http://localhost:8080/api/bonds')
+  return getData<Bond[]>('https://multi-select-example.jollyhill-6d8c9464.westeurope.azurecontainerapps.io/api/bonds')
     .then(bonds => {
       bondCache = bonds
       return bonds
