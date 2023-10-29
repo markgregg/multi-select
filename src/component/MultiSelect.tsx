@@ -28,6 +28,7 @@ interface MultiSelectProps {
   defaultItemLimit?: number
   simpleOperation?: boolean
   onMatchersChanged?: (matchers: Matcher[]) => void
+  onComplete?: () => void
   clearIcon?: React.ReactElement
   maxDropDownHeight?: number
   minDropDownWidth?: number
@@ -41,6 +42,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   defaultItemLimit,
   simpleOperation,
   onMatchersChanged,
+  onComplete,
   clearIcon,
   maxDropDownHeight,
   minDropDownWidth,
@@ -231,6 +233,12 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           deleteAll()
           event.preventDefault()
         }
+        break
+      case 'Enter':
+        if (onComplete) {
+          onComplete()
+        }
+        event.preventDefault()
         break
     }
   }

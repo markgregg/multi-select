@@ -152,7 +152,7 @@ or |  the comparisons on either side can be true
 * PageDown - move to previous data source group in the option list
 * Home - move to first data source group in the option list
 * End - move to last data source group in the option list
-* Enter - select current option
+* Enter - select current option / enter selection
 * Tab - select current option
 
 ## Styling

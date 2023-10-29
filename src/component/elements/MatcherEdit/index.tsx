@@ -306,6 +306,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
             event.currentTarget.selectionStart === 0) {
             onEditPrevious(false)
             event.preventDefault()
+            event.stopPropagation()
           }
           break
         case 'ArrowRight':
@@ -315,6 +316,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
             event.currentTarget.selectionStart === event.currentTarget.value.length) {
             onEditNext()
             event.preventDefault()
+            event.stopPropagation()
           }
           break
         case 'ArrowUp':
@@ -328,6 +330,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
             }
           }
           event.preventDefault()
+          event.stopPropagation()
           break
         case 'ArrowDown':
           if (activeOption === null) {
@@ -340,22 +343,27 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
             }
           }
           event.preventDefault()
+          event.stopPropagation()
           break
         case 'PageUp':
           setActiveOption(getCategoryIndex(activeOption ?? 0, false))
           event.preventDefault()
+          event.stopPropagation()
           break
         case 'PageDown':
           setActiveOption(getCategoryIndex(activeOption ?? totalOptions - 1))
           event.preventDefault()
+          event.stopPropagation()
           break
         case 'Home':
           setActiveOption(0)
           event.preventDefault()
+          event.stopPropagation()
           break
         case 'End':
           setActiveOption(totalOptions - 1)
           event.preventDefault()
+          event.stopPropagation()
           break
         case 'Enter':
         case 'Tab':
@@ -363,22 +371,30 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
             const optionsArray = options.flatMap((pair) => pair[1])
             if (optionsArray.length > activeOption) {
               selectOption(optionsArray[activeOption])
+              event.preventDefault()
+              event.stopPropagation()
             }
-          } else if (text.length === 0) {
+          } else if (text.length === 0 && matcher) {
             selectOption()
+            event.preventDefault()
+            event.stopPropagation()
           } else if (matcher && onCancel) {
             onCancel()
+            event.preventDefault()
+            event.stopPropagation()
           }
-          event.preventDefault()
           break
         case 'Backspace':
           if (text.length === 0) {
             if (onEditPrevious && !event.shiftKey && !event.ctrlKey) {
               onEditPrevious(true)
+              event.preventDefault()
+              event.stopPropagation()
             } else if (onCancel) { //not standalone edit
               selectOption()
+              event.preventDefault()
+              event.stopPropagation()
             }
-            event.preventDefault()
           }
           break
       }
