@@ -3,7 +3,7 @@ import DataSource, {
   DataSourceLookup,
   SourceItem,
 } from '../../types/DataSource'
-import { Matcher, Comparison, Operator, Option, Config } from '../../types'
+import { Matcher, Option, Config } from '../../types'
 import { hasFocusContext, configContext } from '../../state/context'
 import { guid } from '../../utils'
 import OptionList from '../OptionList'
@@ -48,11 +48,11 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
         }`
         : '',
     )
-    const [comparison, setComparison] = React.useState<Comparison>(
-      matcher?.comparison ?? '=',
+    const [comparison, setComparison] = React.useState<string>(
+      matcher?.comparison ?? config.defaultComparison,
     )
-    const [operator, setOperator] = React.useState<Operator>(
-      matcher?.operator ?? '&',
+    const [operator, setOperator] = React.useState<string>(
+      matcher?.operator ?? config.and,
     )
     const key = React.useRef('')
     const [options, setOptions] = React.useState<[string, Option[]][]>([])
@@ -76,19 +76,19 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       if (searchText.length > 2) {
         const symbol = searchText.substring(0, 3)
         if (symbol === 'and') {
-          setOperator('&')
+          setOperator(config.and)
           return searchText.substring(3).trim()
         }
       }
       if (searchText.length > 1) {
         const symbol = searchText.substring(0, 2)
         if (symbol === 'or') {
-          setOperator('|')
+          setOperator(config.or)
           return searchText.substring(2).trim()
         }
       }
       const symbol = searchText[0]
-      if (symbol === '&' || symbol === '|') {
+      if (symbol === config.and || symbol === config.or) {
         setOperator(symbol)
         return searchText.substring(1).trim()
       }
@@ -97,12 +97,13 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
 
     const checkForComparison = (searchText: string): string | null => {
       if (searchText.length > 1) {
-        const symbol = searchText.substring(0, 2)
-        if (symbol === '>=' || symbol === '<=' || symbol === '!*' || symbol === '<*' || symbol === '>*') {
-          setComparison(symbol)
+        const symbolPair = searchText.substring(0, 2)
+        if (config.comparisons.includes(symbolPair)) {
+          setComparison(symbolPair)
           return searchText.substring(2).trim()
         }
       }
+
       const symbol = searchText[0]
       if (!config.simpleOperation && (
         symbol === '(' ||
@@ -110,17 +111,24 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
         selectOption(symbol)
         return null
       }
+
       if (
-        symbol === '=' ||
-        symbol === '>' ||
-        symbol === '<' ||
-        symbol === '!' ||
-        symbol === '*'
+        config.comparisons.includes(symbol)
       ) {
         setComparison(symbol)
         return searchText.substring(1).trim()
       }
       return searchText
+    }
+
+    const limitOptions = (
+      ds: DataSourceLookup,
+      options: Option[]
+    ): Option[] => {
+      if (options.length > (ds.itemLimit ?? config.defaultItemLimit)) {
+        return options.slice(0, ds.itemLimit ?? config.defaultItemLimit)
+      }
+      return options
     }
 
     const updateOptions = (
@@ -142,10 +150,8 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
                 : item.toString(),
           }
         })
-      if (options.length > (ds.itemLimit ?? config.defaultItemLimit)) {
-        options = options.slice(0, ds.itemLimit ?? config.defaultItemLimit)
-      }
       if (options.length > 0) {
+        options = limitOptions(ds, options)
         addOptions(allOptions, ds, options)
       }
       return options.length
@@ -158,23 +164,44 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       if (ds.precedence) {
         const dsp = ds.precedence
         return allOptions.findIndex((item) => {
-          const ds2 = config.dataSources.find((dsc) => dsc.name === item[0])
+          const ds2 = config.dataSources.find((dsc) => dsc.title === item[0])
           return dsp > (ds2?.precedence ?? 0)
         })
       }
       return -1
     }
 
+    const combineOptions = (
+      ds: DataSourceLookup,
+      list1: Option[],
+      list2: Option[]
+    ): Option[] => {
+      return limitOptions(ds, list1.concat(list2).filter((opt, index, array) => array.findIndex(o => o.value === opt.value) === index))
+    }
+
     const addOptions = (
+      allOptions: [string, Option[]][],
+      ds: DataSourceLookup,
+      options: Option[],
+    ) => {
+      const currentEntry = allOptions.find(entry => entry[0] === ds.title)
+      if (currentEntry) {
+        currentEntry[1] = combineOptions(ds, currentEntry[1], options)
+        return
+      }
+      insertOptions(allOptions, ds, options)
+    }
+
+    const insertOptions = (
       allOptions: [string, Option[]][],
       ds: DataSource,
       options: Option[],
     ) => {
       const index = getInsertIndex(allOptions, ds)
       if (index !== -1) {
-        allOptions.splice(index, 0, [ds.name, options])
+        allOptions.splice(index, 0, [ds.title, options])
       } else {
-        allOptions.push([ds.name, options])
+        allOptions.push([ds.title, options])
       }
     }
 
@@ -240,7 +267,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
               currentKey === key.current
             ) {
               const value = ds.value(searchText)
-              addOptions(allOptions, ds, [
+              insertOptions(allOptions, ds, [
                 { source: ds.name, value, text: value.toString() },
               ])
               totalCount += 1

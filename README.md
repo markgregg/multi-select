@@ -79,6 +79,9 @@ const App = () => {
 ## Properties
 * matchers - matchers to show in the control           
 * dataSources - datasources available to the control
+* defaultComparison - default comparison symbol, defaults to =
+* and - the and symbol, defaults to &
+* or - the or symbol, defaults to -
 * defaultItemLimit - default number of items to show for each datasource in the dropdown
 * simpleOperation - only allow users to selct comparisons, no brackets or and or
 * onMatchersChanged - event for when the matchers change
@@ -112,28 +115,19 @@ searchStartLength?: number
 ### Match
 
 ```js
-match: RegExp | ((text: string) => boolean)
+match: RegExp | ((text: string) => boolean) | RegExp[] | ((text: string) => boolean)[]
 value: (text: string) => Value
 ```
 
-* match - either a regex or a function, to determine if the text entered is a match
+* match - either a regex or a function, or an array to determine if the text entered is a match
 * value - a function that can extract a value from the text
 
 ## Operators and Comparisons
 ```js
-and & the compairsons on both sides must be true
-or |  the comparisons on either side can be true
+and the compairsons on both sides must be true
+or the comparisons on either side can be true
 
-=   value must equal the matcher
-!   value must not equal the matcher
->   value must be greater than the matcher
-<   value must be less than the matcher
->=  value must be equal to or greater than the matcher
-<=  value must equal to or less than the matcher
-*   value must be like the matcher
-!*  value must not be like the matcher
-<*  value starts with
->*  value ends with
+Comparisons can be configured as can the symbol for and/or
 
 (   open bracket
 )   close bracket

@@ -1,7 +1,7 @@
-import { Comparison, DataSource, Matcher } from "./types"
+import { DataSource, Matcher } from "./types"
 
 export const checkBracket = (
-  brackets: Comparison[],
+  brackets: string[],
   missingBracketIndexes: number[],
   open: boolean
 ) => {

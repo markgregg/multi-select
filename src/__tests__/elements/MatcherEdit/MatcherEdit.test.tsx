@@ -4,7 +4,7 @@ import {
   configContext,
 } from '../../../component/state/context'
 import { RenderResult, act, fireEvent, render, waitFor } from '@testing-library/react'
-import Matcher, { Comparison, Operator } from '../../../component/types/Matcher'
+import Matcher from '../../../component/types/Matcher'
 import { closeBracket, openBracket, singleMatcher, testConfig, testDataSources } from '../../testData'
 import { Config } from '@/component/types'
 
@@ -27,7 +27,7 @@ describe('MatcherEdit', () => {
     expect(element).toHaveValue('& =text')
   })
 
-  it.each<[string, Operator, Comparison]>([
+  it.each<[string, string, string]>([
     ['= a', '&', '='],
     ['! a', '&', '!'],
     ['> 1', '&', '>'],
@@ -274,6 +274,10 @@ describe('MatcherEdit', () => {
       inFocus: true,
       config: {
         dataSources: testDataSources,
+        defaultComparison: '=',
+        and: '&',
+        or: '|',
+        comparisons: ['=', '!', '*', '!*', '<*', '>*', '>', '<', '>=', '<=', '!'],
         simpleOperation: true,
         defaultItemLimit: 10,
       }
@@ -287,6 +291,10 @@ describe('MatcherEdit', () => {
       inFocus: true,
       config: {
         dataSources: testDataSources,
+        defaultComparison: '=',
+        and: '&',
+        or: '|',
+        comparisons: ['=', '!', '*', '!*', '<*', '>*', '>', '<', '>=', '<=', '!'],
         simpleOperation: true,
         defaultItemLimit: 10,
       }
@@ -300,6 +308,10 @@ describe('MatcherEdit', () => {
       inFocus: true,
       config: {
         dataSources: testDataSources,
+        defaultComparison: '=',
+        and: '&',
+        or: '|',
+        comparisons: ['=', '!', '*', '!*', '<*', '>*', '>', '<', '>=', '<=', '!'],
         simpleOperation: true,
         defaultItemLimit: 10,
       }

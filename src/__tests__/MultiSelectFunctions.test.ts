@@ -1,9 +1,8 @@
 import { checkBracket } from "@/component/MultiSelectFunctions"
-import { Comparison } from "@/component/types"
 
 describe('MultiSelectFunctions', () => {
   it('check simple mismatched open brackets are returned', () => {
-    const brackets: Comparison[] = [
+    const brackets: string[] = [
       '('
     ]
     const missingIndexes: number[] = []
@@ -12,7 +11,7 @@ describe('MultiSelectFunctions', () => {
   })
 
   it('check simple mismatched open brackets 2 are returned', () => {
-    const brackets: Comparison[] = [
+    const brackets: string[] = [
       '(',
       ')',
       '('
@@ -23,7 +22,7 @@ describe('MultiSelectFunctions', () => {
   })
 
   it('check simple mismatched open brackets 3 are returned', () => {
-    const brackets: Comparison[] = [
+    const brackets: string[] = [
       '(',
       '(',
       '(',
@@ -38,7 +37,7 @@ describe('MultiSelectFunctions', () => {
   })
 
   it('check simple mismatched open brackets 4 are returned', () => {
-    const brackets: Comparison[] = [
+    const brackets: string[] = [
       '(',
       '(',
       '(',
@@ -51,7 +50,7 @@ describe('MultiSelectFunctions', () => {
   })
 
   it('check simple mismatched close brackets are returned', () => {
-    const brackets: Comparison[] = [
+    const brackets: string[] = [
       ')'
     ]
     const missingIndexes: number[] = []
@@ -60,7 +59,7 @@ describe('MultiSelectFunctions', () => {
   })
 
   it('check simple mismatched close brackets 2 are returned', () => {
-    const brackets: Comparison[] = [
+    const brackets: string[] = [
       '(',
       ')',
       ')'
@@ -71,7 +70,7 @@ describe('MultiSelectFunctions', () => {
   })
 
   it('check simple mismatched close brackets 3 are returned', () => {
-    const brackets: Comparison[] = [
+    const brackets: string[] = [
       '(',
       '(',
       '(',
@@ -86,7 +85,7 @@ describe('MultiSelectFunctions', () => {
   })
 
   it('check simple mismatched close brackets 4 are returned', () => {
-    const brackets: Comparison[] = [
+    const brackets: string[] = [
       '(',
       '(',
       ')',
@@ -99,7 +98,7 @@ describe('MultiSelectFunctions', () => {
   })
 
   it('check matching brackets are not returned', () => {
-    const brackets: Comparison[] = [
+    const brackets: string[] = [
       '(',
       '(',
       '(',
@@ -113,7 +112,7 @@ describe('MultiSelectFunctions', () => {
   })
 
   it('check matching brackets 2 are not returned', () => {
-    const brackets: Comparison[] = [
+    const brackets: string[] = [
       '(',
       '(',
       '(',
@@ -127,7 +126,7 @@ describe('MultiSelectFunctions', () => {
   })
 
   it('check multiple mismatched brackets are returned', () => {
-    const brackets: Comparison[] = [
+    const brackets: string[] = [
       '(',
       '(',
       '(',
@@ -143,7 +142,7 @@ describe('MultiSelectFunctions', () => {
   })
 
   it('check multiple mismatched brackets 2 are returned', () => {
-    const brackets: Comparison[] = [
+    const brackets: string[] = [
       '(',
       '(',
       ')',

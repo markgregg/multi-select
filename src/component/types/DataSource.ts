@@ -1,18 +1,18 @@
-import { Comparison, Value } from './Matcher'
+import { Value } from './Matcher'
 
 export type SourceItem = string | object
 
 export interface DataSourceBase {
   name: string
   title: string
-  comparisons: Comparison[]
+  comparisons: string[]
   precedence?: number
   selectionLimit?: number
 }
 
-export const defaultComparison: Comparison[] = ['=', '!']
-export const stringComparisons: Comparison[] = ['=', '!', '*', '!*', '<*', '>*']
-export const numberComparisons: Comparison[] = ['=', '>', '<', '>=', '<=', '!']
+export const defaultComparison: string[] = ['=', '!']
+export const stringComparisons: string[] = ['=', '!', '*', '!*', '<*', '>*']
+export const numberComparisons: string[] = ['=', '>', '<', '>=', '<=', '!']
 
 export interface DataSourceLookup extends DataSourceBase {
   source: SourceItem[] | ((text: string) => Promise<SourceItem[]>)

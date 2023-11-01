@@ -16,3 +16,7 @@ export const guid = (): string => {
   }
   return `${gen(2)}-${gen()}-${gen()}-${gen()}-${gen(3)}`
 }
+
+export const isUnique = (value: string, index: number, array: string[]): boolean => {
+  return array.indexOf(value) === index;
+}

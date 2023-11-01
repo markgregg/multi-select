@@ -1,6 +1,6 @@
 import MultiSelect from '../component/MultiSelect'
 import DataSource, { defaultComparison } from '../component/types/DataSource'
-import Matcher, { Comparison } from '../component/types/Matcher'
+import Matcher from '../component/types/Matcher'
 import { fireEvent, prettyDOM, render, waitFor } from '@testing-library/react'
 import { dualMatchers, multipleListMatchers, multipleMatchers, singleMatcher } from './testData'
 
@@ -50,7 +50,7 @@ describe('MultiSelect', () => {
     expect(label3?.textContent).toBe('and  text3')
   })
 
-  it.each<[Comparison, string]>([
+  it.each<[string, string]>([
     ['=', 'and  text'],
     ['!', 'and ! text'],
     ['>', 'and > text'],

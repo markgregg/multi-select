@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Theme, getAgGridStyle, styleFromTheme } from "@/themes"
 import { DataSource, Matcher, SourceItem, defaultComparison, numberComparisons, stringComparisons } from '@/component/types'
-import MultiSelect from '@/component/MultiSelect'
+import MultiSelect, { isUnique } from '@/component/MultiSelect'
 import { AgGridReact } from "ag-grid-react";
 import { fetchBondsAndCache } from '@/services/bondsService';
 import Bond from '@/types/Bond';
@@ -14,10 +14,6 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 
 interface AgGridExampleProps {
   theme: Theme
-}
-
-const isUnique = (value: string, index: number, array: string[]) => {
-  return array.indexOf(value) === index;
 }
 
 const formatDate = (date: Date): string => date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
@@ -53,7 +49,7 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
   ]);
   const [filterSources, setFilterSources] = React.useState<string[]>([])
 
-  const findItems = React.useCallback((text: string, field: 'isin' | 'currency'): SourceItem[] => {
+  const findItems = React.useCallback((text: string, field: 'isin' | 'currency' | 'issuer'): SourceItem[] => {
     const uniqueItems = new Set<string>()
     const callback = (row: IRowNode<Bond>) => {
       if (row.data) {
@@ -133,6 +129,23 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
       selectionLimit: 2,
       match: /^[a-zA-Z]{2,}$/,
       value: (text: string) => text,
+    },
+    {
+      name: 'Issuer2',
+      title: 'Issuer',
+      comparisons: defaultComparison,
+      precedence: 1,
+      ignoreCase: false,
+      searchStartLength: 3,
+      selectionLimit: 2,
+      source: async (text) => new Promise((resolve) => {
+        setTimeout(
+          () =>
+            resolve(findItems(text, 'issuer')
+            ),
+          5,
+        )
+      })
     },
     {
       name: 'MaturityDate',

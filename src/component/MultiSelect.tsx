@@ -4,8 +4,7 @@ import {
   DataSource,
   Matcher,
   MutliSelectStyles,
-  Option, Comparison,
-  Operator,
+  Option,
   Value,
   OperatorDisplay,
   SourceItem,
@@ -13,6 +12,7 @@ import {
   stringComparisons,
   numberComparisons
 } from './types'
+import { isUnique } from './utils'
 import { hasFocusContext, configContext, ITEM_LIMIT } from './state/context'
 import MatcherView from './elements/MatcherView'
 import MatcherEdit from './elements/MatcherEdit'
@@ -25,6 +25,9 @@ import './MultiSelect.css'
 interface MultiSelectProps {
   matchers?: Matcher[]
   dataSources: DataSource[]
+  defaultComparison?: string,
+  and?: string,
+  or?: string,
   defaultItemLimit?: number
   simpleOperation?: boolean
   onMatchersChanged?: (matchers: Matcher[]) => void
@@ -36,8 +39,17 @@ interface MultiSelectProps {
   styles?: MutliSelectStyles
 }
 
+const comparisonsFromDataSources = (dataSources: DataSource[]): string[] => {
+  return dataSources
+    .flatMap(ds => ds.comparisons)
+    .filter(isUnique)
+}
+
 const MultiSelect: React.FC<MultiSelectProps> = ({
   matchers,
+  defaultComparison,
+  and,
+  or,
   dataSources,
   defaultItemLimit,
   simpleOperation,
@@ -60,13 +72,17 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   const config = React.useMemo<Config>(() => {
     return {
       dataSources,
+      defaultComparison: defaultComparison ?? '=',
+      and: and ?? '&',
+      or: or ?? '|',
+      comparisons: comparisonsFromDataSources(dataSources),
       defaultItemLimit: defaultItemLimit ?? ITEM_LIMIT,
       simpleOperation: simpleOperation ?? false,
       maxDropDownHeight,
       minDropDownWidth,
       searchStartLength
     }
-  }, [dataSources, defaultItemLimit, simpleOperation, maxDropDownHeight, minDropDownWidth, searchStartLength])
+  }, [dataSources, defaultComparison, and, or, defaultItemLimit, simpleOperation, maxDropDownHeight, minDropDownWidth, searchStartLength])
 
   const loseFocus = React.useCallback(() => {
     setHasFocus(false)
@@ -311,8 +327,7 @@ export type {
   DataSource,
   Matcher,
   MutliSelectStyles,
-  Option, Comparison,
-  Operator,
+  Option,
   Value,
   OperatorDisplay,
   SourceItem
@@ -320,6 +335,7 @@ export type {
 export {
   defaultComparison,
   stringComparisons,
-  numberComparisons
+  numberComparisons,
+  isUnique
 }
 export default MultiSelect

@@ -1,4 +1,4 @@
-import Matcher, { Comparison } from '../component/types/Matcher'
+import Matcher from '../component/types/Matcher'
 import Config from '../component/types/Config'
 import DataSource, {
   defaultComparison,
@@ -78,6 +78,10 @@ const testDataSources: DataSource[] = [
 
 const testConfig: Config = {
   dataSources: testDataSources,
+  defaultComparison: '=',
+  and: '&',
+  or: '|',
+  comparisons: ['=', '!', '*', '!*', '<*', '>*', '>', '<', '>=', '<=', '!'],
   simpleOperation: false,
   defaultItemLimit: 10,
 }
@@ -93,7 +97,7 @@ const singleMatcher: Matcher[] = [
   },
 ]
 
-const dualMatchers = (comp: Comparison): Matcher[] => {
+const dualMatchers = (comp: string): Matcher[] => {
   return [
     {
       key: 'test',

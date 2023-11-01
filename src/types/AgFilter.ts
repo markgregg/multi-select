@@ -1,4 +1,4 @@
-import { Comparison, Matcher, Operator } from '@/component/types'
+import { Matcher } from '@/component/types'
 
 export type AgFilterType = 'date' | 'text' | 'number'
 export type AgOperator = 'AND' | 'OR'
@@ -47,7 +47,7 @@ const getFilterType = (source: string): AgFilterType => {
   }
 }
 
-const getTextComparisonType = (comparison: Comparison):
+const getTextComparisonType = (comparison: string):
   'equals' | 'notEqual' | 'contains' | 'notContains' | 'startsWith' | 'endsWith' => {
   switch (comparison) {
     case '!':
@@ -65,7 +65,7 @@ const getTextComparisonType = (comparison: Comparison):
   }
 }
 
-const getDateNumberComparisonType = (comparison: Comparison):
+const getDateNumberComparisonType = (comparison: string):
   'equals' | 'notEqual' | 'greaterThan' | 'lessThan' | 'greaterThanOrEqual' | 'lessThanOrEqual' => {
   switch (comparison) {
     case '!':
@@ -83,7 +83,7 @@ const getDateNumberComparisonType = (comparison: Comparison):
   }
 }
 
-const getOperator = (operator: Operator): AgOperator => {
+const getOperator = (operator: string): AgOperator => {
   return operator === '&'
     ? 'AND'
     : 'OR'
