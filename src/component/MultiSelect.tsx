@@ -84,6 +84,10 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     }
   }, [dataSources, defaultComparison, and, or, defaultItemLimit, simpleOperation, maxDropDownHeight, minDropDownWidth, searchStartLength])
 
+  React.useEffect(() => {
+    setCurrentMatchers(matchers ?? [])
+  }, [matchers])
+
   const loseFocus = React.useCallback(() => {
     setHasFocus(false)
   }, [])

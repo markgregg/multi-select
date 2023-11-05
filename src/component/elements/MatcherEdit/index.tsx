@@ -251,13 +251,16 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
                   })
                 } else {
                   if (currentKey === key.current) {
-                    totalCount += updateOptions(
-                      ds.source.filter((item) =>
-                        matchItems(item, ds, searchText),
-                      ),
-                      ds,
-                      allOptions,
+                    const items = ds.source.filter((item) =>
+                      matchItems(item, ds, searchText),
                     )
+                    if (items.length > 0) {
+                      totalCount += updateOptions(
+                        items,
+                        ds,
+                        allOptions,
+                      )
+                    }
                   }
                 }
               }

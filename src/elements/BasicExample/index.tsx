@@ -65,6 +65,7 @@ const BasicExample: React.FC<BasicExampleProps> = ({ theme }) => {
             dataSources={dataSource}
             onMatchersChanged={setMatchers}
             styles={styleFromTheme(theme)}
+            onComplete={() => setMatchers([])}
           />
         </div>
         <Help theme={theme} />
