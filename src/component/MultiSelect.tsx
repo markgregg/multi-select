@@ -69,6 +69,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     matchers ?? [],
   )
   const [mismatchedBrackets, setMismatchedBrackets] = React.useState<number[]>([])
+  const [inEdit, setInEdit] = React.useState<boolean>(false)
   const config = React.useMemo<Config>(() => {
     return {
       dataSources,
@@ -85,7 +86,11 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   }, [dataSources, defaultComparison, and, or, defaultItemLimit, simpleOperation, maxDropDownHeight, minDropDownWidth, searchStartLength])
 
   React.useEffect(() => {
-    setCurrentMatchers(matchers ?? [])
+    if (!inEdit) {
+      setCurrentMatchers(matchers ?? [])
+    } else {
+      setInEdit(false)
+    }
   }, [matchers])
 
   const loseFocus = React.useCallback(() => {
@@ -201,6 +206,11 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     }
   }
 
+  const matcherChanging = (matcher: Matcher) => {
+    setInEdit(true)
+    notifyMatchersChanged(currentMatchers.filter(m => matcher.key !== m.key))
+  }
+
   const handleKeyPress = (event: React.KeyboardEvent) => {
     switch (event.code) {
       case 'ArrowLeft':
@@ -298,6 +308,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 onSwapMatcher={swapMatchers}
                 onEditPrevious={editLast}
                 onEditNext={editNext}
+                onChanging={() => matcherChanging(matcher)}
                 selected={index === activeMatcher}
                 first={index === 0 || currentMatchers[index - 1].comparison === '('}
                 hideOperators={simpleOperation}
@@ -307,7 +318,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             ))
           }
           {
-            activeMatcher === null && <MatcherEdit
+            <MatcherEdit
               ref={inputRef}
               onMatcherChanged={addMatcher}
               onValidate={m => validateMatcher(currentMatchers, dataSources, m)}

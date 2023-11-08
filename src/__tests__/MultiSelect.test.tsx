@@ -461,7 +461,7 @@ describe('MultiSelect', () => {
     input && fireEvent.keyDown(input, { code: 'Enter' })
     const error = result.container.querySelector('#editError')
     expect(error?.textContent).toBe('Datasource (list) is limited to 2 items.')
-    expect(matchers).toStrictEqual([])
+    expect(matchers).toStrictEqual(multipleListMatchers.filter(m => m.key !== 'test3'))
   })
 })
 

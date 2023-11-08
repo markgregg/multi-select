@@ -15,6 +15,7 @@ const dataSource: DataSource[] = [
     title: 'list of strings',
     comparisons: defaultComparison,
     precedence: 1,
+    selectionLimit: 2,
     source: ['asdas', 'assda', 'loadsp'],
   },
   {

@@ -169,6 +169,7 @@ const createMatcherView = (
             options?.onSwapMatcher ??
             ((m1, m2) => console.log(`${m1}-${m2}`))
           }
+          onChanging={() => console.log('onChanging')}
           hideOperators={options?.hideOperators}
         />
       </configContext.Provider>

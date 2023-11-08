@@ -19,6 +19,7 @@ interface MatcherEditProps {
   onCancel?: () => void
   onEditPrevious: (deleting: boolean) => void
   onEditNext: () => void
+  onChanging?: () => void
   inFocus?: boolean
   first: boolean
   isActive?: boolean
@@ -39,6 +40,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       first,
       isActive,
       styles,
+      onChanging,
     } = props
     const config = React.useContext<Config>(configContext)
     const inputRef = React.useRef<HTMLInputElement | null>(null)
@@ -59,6 +61,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const [totalOptions, setTotalOptions] = React.useState<number>(0)
     const [activeOption, setActiveOption] = React.useState<number | null>(null)
     const [error, setError] = React.useState<string | null>(null)
+    const [notifiedChanging, setNotifiedChaning] = React.useState<boolean>(false)
 
     const controlHasFocus = React.useContext<boolean>(hasFocusContext)
 
@@ -227,6 +230,12 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       setComparison('=')
       setOperator('&')
 
+      if (!notifiedChanging) {
+        if (onChanging) {
+          onChanging()
+        }
+        setNotifiedChaning(true)
+      }
       let totalCount = 0
       if (newText.length > 0) {
         let searchText = newText.trim()
