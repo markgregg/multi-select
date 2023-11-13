@@ -21,7 +21,6 @@ import { MdClear } from 'react-icons/md'
 import useExternalClicks from './hooks/useExternalClicks/useExternalClicks'
 import './MultiSelect.css'
 
-
 interface MultiSelectProps {
   matchers?: Matcher[]
   dataSources: DataSource[]
@@ -211,6 +210,19 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     notifyMatchersChanged(currentMatchers.filter(m => matcher.key !== m.key))
   }
 
+  const insertMatcher = (newMatcher: Matcher, currentMatcher: Matcher | null) => {
+    if (currentMatcher) {
+      const index = currentMatchers.findIndex(m => m.key === currentMatcher.key)
+      currentMatchers.splice(index, 0, newMatcher)
+      setCurrentMatchers([...currentMatchers])
+      if (activeMatcher != null && index <= activeMatcher) {
+        setActiveMatcher(activeMatcher + 1)
+      }
+    } else {
+      setCurrentMatchers([...currentMatchers, newMatcher])
+    }
+  }
+
   const handleKeyPress = (event: React.KeyboardEvent) => {
     switch (event.code) {
       case 'ArrowLeft':
@@ -309,6 +321,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 onEditPrevious={editLast}
                 onEditNext={editNext}
                 onChanging={() => matcherChanging(matcher)}
+                onInsertMatcher={newMatcher => insertMatcher(newMatcher, matcher)}
                 selected={index === activeMatcher}
                 first={index === 0 || currentMatchers[index - 1].comparison === '('}
                 hideOperators={simpleOperation}
@@ -328,6 +341,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
               isActive={true}
               onEditPrevious={editLast}
               onEditNext={editNext}
+              onInsertMatcher={newMatcher => insertMatcher(newMatcher, null)}
               styles={styles}
             />
           }

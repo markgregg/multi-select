@@ -389,6 +389,7 @@ const createMatcherEdit = (
           onCancel={options?.onCancel}
           onEditPrevious={options?.onEditPrevious ?? (() => console.log("prev"))}
           onEditNext={options?.onEditNext ?? (() => console.log("prev"))}
+          onInsertMatcher={() => console.log("prev")}
           inFocus={options?.inFocus}
           first={first}
           isActive={options?.isActive}

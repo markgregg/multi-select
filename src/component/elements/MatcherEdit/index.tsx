@@ -20,6 +20,7 @@ interface MatcherEditProps {
   onEditPrevious: (deleting: boolean) => void
   onEditNext: () => void
   onChanging?: () => void
+  onInsertMatcher: (matcher: Matcher) => void
   inFocus?: boolean
   first: boolean
   isActive?: boolean
@@ -36,6 +37,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       onCancel,
       onEditPrevious,
       onEditNext,
+      onInsertMatcher,
       inFocus,
       first,
       isActive,
@@ -409,7 +411,11 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           if (options.length > 0 && activeOption !== null) {
             const optionsArray = options.flatMap((pair) => pair[1])
             if (optionsArray.length > activeOption) {
-              selectOption(optionsArray[activeOption])
+              if (event.shiftKey) {
+                insertMatcher(optionsArray[activeOption])
+              } else {
+                selectOption(optionsArray[activeOption])
+              }
               event.preventDefault()
               event.stopPropagation()
             }
@@ -454,15 +460,15 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       return null
     }
 
-    const selectOption = (option?: Option | '(' | ')') => {
+    const validate = (option?: Option | '(' | ')'): Matcher | null | false => {
       if (option !== '(' && option !== ')' && option) {
         const err = validateOperator(option)
         if (err) {
           setError(err)
-          return
+          return false
         }
       }
-      const newMatcher = option
+      const newMatcher: Matcher | null = option
         ? {
           key: matcher?.key ?? guid(),
           operator: option === ')' ? '' : operator,
@@ -476,14 +482,30 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
         const err = onValidate(newMatcher)
         if (err) {
           setError(err)
-          return
+          return false
         }
       }
-      onMatcherChanged(newMatcher)
-      setText('')
-      setOptions([])
-      setTotalOptions(0)
-      setActiveOption(null)
+      return newMatcher
+    }
+
+    const insertMatcher = (option?: Option | '(' | ')') => {
+      const newMatcher = validate(option)
+      if (newMatcher !== false &&
+        newMatcher !== null &&
+        onInsertMatcher) {
+        onInsertMatcher(newMatcher)
+      }
+    }
+
+    const selectOption = (option?: Option | '(' | ')') => {
+      const newMatcher = validate(option)
+      if (newMatcher !== false) {
+        onMatcherChanged(newMatcher)
+        setText('')
+        setOptions([])
+        setTotalOptions(0)
+        setActiveOption(null)
+      }
     }
 
     return (

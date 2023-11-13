@@ -165,6 +165,7 @@ const createMatcherView = (
           }
           onEditPrevious={() => console.log("prev")}
           onEditNext={() => console.log("prev")}
+          onInsertMatcher={() => console.log("prev")}
           onSwapMatcher={
             options?.onSwapMatcher ??
             ((m1, m2) => console.log(`${m1}-${m2}`))
