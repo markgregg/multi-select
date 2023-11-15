@@ -21,6 +21,7 @@ export interface DataSourceLookup extends DataSourceBase {
   ignoreCase?: boolean
   itemLimit?: number
   searchStartLength?: number
+  showInMenuBar?: boolean
 }
 
 export interface DataSourceValue extends DataSourceBase {

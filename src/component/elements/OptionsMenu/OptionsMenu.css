@@ -1,0 +1,32 @@
+.optionMenuMain {
+  align-content: stretch;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: white;
+}
+
+.optionMenuMain ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.optionMenuHeader {
+  border-left: 1px black solid;
+  border-right: 1px black solid;
+  background: var(--matcherEditMainCategoryBackground, darkgrey);
+  font-weight: bold;
+  font-size: x-small;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.optionMenuMain li {
+  padding-left: 8px;
+  padding-right: 8px;
+  text-align: start;
+}
+
+.optionMenuMain li:hover {
+  background: var(--optionListActiveOption, lightgray);
+}

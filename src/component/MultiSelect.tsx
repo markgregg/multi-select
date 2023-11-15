@@ -15,11 +15,12 @@ import {
 import { isUnique } from './utils'
 import { hasFocusContext, configContext, ITEM_LIMIT } from './state/context'
 import MatcherView from './elements/MatcherView'
-import MatcherEdit from './elements/MatcherEdit'
+import MatcherEdit, { MatcherEditApi } from './elements/MatcherEdit'
 import { checkBracket, validateMatcher } from './MultiSelectFunctions'
 import { MdClear } from 'react-icons/md'
 import useExternalClicks from './hooks/useExternalClicks/useExternalClicks'
 import './MultiSelect.css'
+import MenuBar from './elements/MenuBar'
 
 interface MultiSelectProps {
   matchers?: Matcher[]
@@ -36,6 +37,7 @@ interface MultiSelectProps {
   minDropDownWidth?: number
   searchStartLength?: number
   styles?: MutliSelectStyles
+  showMenuBar?: boolean
 }
 
 const comparisonsFromDataSources = (dataSources: DataSource[]): string[] => {
@@ -58,17 +60,20 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   maxDropDownHeight,
   minDropDownWidth,
   searchStartLength,
-  styles
+  styles,
+  showMenuBar
 }) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null)
   const editDivRef = React.useRef<HTMLDivElement | null>(null)
   const [hasFocus, setHasFocus] = React.useState<boolean>(false)
+  const [showMenu, setShowMenu] = React.useState<boolean>(false)
   const [activeMatcher, setActiveMatcher] = React.useState<number | null>(null)
   const [currentMatchers, setCurrentMatchers] = React.useState<Matcher[]>(
     matchers ?? [],
   )
   const [mismatchedBrackets, setMismatchedBrackets] = React.useState<number[]>([])
   const [inEdit, setInEdit] = React.useState<boolean>(false)
+  const [editAPI, setEditApi] = React.useState<MatcherEditApi>()
   const config = React.useMemo<Config>(() => {
     return {
       dataSources,
@@ -92,15 +97,20 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     }
   }, [matchers])
 
-  const loseFocus = React.useCallback(() => {
+  const gotFocus = () => {
+    setShowMenu(true);
+  }
+
+  const clickedAway = React.useCallback(() => {
+    setShowMenu(false)
     setHasFocus(false)
   }, [])
 
-  useExternalClicks(editDivRef.current, loseFocus)
+  useExternalClicks(editDivRef.current, clickedAway)
 
-  const inputFocus = () => {
-    setHasFocus(true)
+  const editFocus = () => {
     setActiveMatcher(null)
+    setHasFocus(true)
   }
 
   const notifyMatchersChanged = (matchers: Matcher[]) => {
@@ -289,6 +299,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     <hasFocusContext.Provider value={hasFocus}>
       <configContext.Provider value={config}>
         <div
+          onMouseEnter={gotFocus}
           id="MultiSelect"
           style={styles?.mutliSelect}
           className="multiSelectMain"
@@ -335,7 +346,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
               ref={inputRef}
               onMatcherChanged={addMatcher}
               onValidate={m => validateMatcher(currentMatchers, dataSources, m)}
-              onFocus={inputFocus}
+              onFocus={editFocus}
               inFocus={activeMatcher === null}
               first={currentMatchers.length === 0}
               isActive={true}
@@ -343,7 +354,16 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
               onEditNext={editNext}
               onInsertMatcher={newMatcher => insertMatcher(newMatcher, null)}
               styles={styles}
+              onAPIAvailable={setEditApi}
             />
+          }
+          {
+            (showMenuBar ?? true) && showMenu &&
+            <MenuBar onItemSelected={(s, opt) => {
+              if (editAPI) {
+                editAPI.setOperator(typeof opt === 'string' ? opt : opt.text)
+              }
+            }} />
           }
         </div>
       </configContext.Provider>

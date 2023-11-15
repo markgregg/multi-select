@@ -1,0 +1,9 @@
+.menuBarMain {
+  background-color: transparent;
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  top: calc(100% + 2px);
+  width: 100%;
+  z-index: 99;
+}

@@ -5,11 +5,16 @@ import DataSource, {
 } from '../../types/DataSource'
 import { Matcher, Option, Config } from '../../types'
 import { hasFocusContext, configContext } from '../../state/context'
-import { guid } from '../../utils'
+import { guid, mapOptions } from '../../utils'
 import OptionList from '../OptionList'
 import MutliSelectStyles from '../../types/MutliSelectStyles'
-import './MatcherEdit.css'
 import ErrorMessage from '../ErrorMessage'
+import './MatcherEdit.css'
+
+export interface MatcherEditApi {
+  setOperator: (op: string) => void
+  setComparison: (comp: string) => void
+}
 
 interface MatcherEditProps {
   matcher?: Matcher
@@ -21,6 +26,7 @@ interface MatcherEditProps {
   onEditNext: () => void
   onChanging?: () => void
   onInsertMatcher: (matcher: Matcher) => void
+  onAPIAvailable?: (api: MatcherEditApi) => void
   inFocus?: boolean
   first: boolean
   isActive?: boolean
@@ -43,6 +49,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       isActive,
       styles,
       onChanging,
+      onAPIAvailable
     } = props
     const config = React.useContext<Config>(configContext)
     const inputRef = React.useRef<HTMLInputElement | null>(null)
@@ -66,6 +73,20 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const [notifiedChanging, setNotifiedChaning] = React.useState<boolean>(false)
 
     const controlHasFocus = React.useContext<boolean>(hasFocusContext)
+
+    React.useEffect(() => {
+      if (onAPIAvailable) {
+        const api: MatcherEditApi = {
+          setComparison(comp) {
+            setText(comp)
+          },
+          setOperator(op) {
+            setText(op)
+          },
+        }
+        onAPIAvailable(api)
+      }
+    }, [])
 
     React.useEffect(() => {
       if (isActive) {
@@ -141,20 +162,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       ds: DataSourceLookup,
       allOptions: [string, Option[]][],
     ): number => {
-      let options: Option[] = items
-        .map((item) => {
-          return {
-            source: ds.name,
-            value:
-              ds.valueGetter && typeof item === 'object'
-                ? ds.valueGetter(item)
-                : item.toString(),
-            text:
-              ds.textGetter && typeof item === 'object'
-                ? ds.textGetter(item)
-                : item.toString(),
-          }
-        })
+      let options: Option[] = mapOptions(items, ds)
       if (options.length > 0) {
         options = limitOptions(ds, options)
         addOptions(allOptions, ds, options)

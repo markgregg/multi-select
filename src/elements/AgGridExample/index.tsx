@@ -100,7 +100,8 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
             ),
           5,
         )
-      })
+      }),
+      showInMenuBar: true
     },
     {
       name: 'Coupon',
