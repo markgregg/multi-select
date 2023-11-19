@@ -11,18 +11,13 @@ interface ErrorMessageProperties {
 const ErrorMessage: React.FC<ErrorMessageProperties> = ({
   errorMessage,
   onErrorAcknowledged,
-  style
+  style,
 }) => {
   return (
-    <div
-      id='editError'
-      className='errorMessageMain'
-      style={style}
-    >
+    <div id="editError" className="errorMessageMain" style={style}>
       <MdClear className="errorMessageIcon" onClick={onErrorAcknowledged} />
       {errorMessage}
     </div>
-
   )
 }
 

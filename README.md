@@ -9,6 +9,7 @@ Visit the [Demo page](https://markgregg.github.io/multi-select-example/)
 ```js
 yarn add multi-select
 ```
+
 or
 
 ```js
@@ -74,22 +75,24 @@ const App = () => {
         onMatchersChanged={setMatchers}
       />
   )
-}  
+}
 ```
+
 ## Properties
-* matchers - matchers to show in the control           
-* dataSources - datasources available to the control
-* defaultComparison - default comparison symbol, defaults to =
-* and - the and symbol, defaults to &
-* or - the or symbol, defaults to -
-* defaultItemLimit - default number of items to show for each datasource in the dropdown
-* simpleOperation - only allow users to selct comparisons, no brackets or and or
-* onMatchersChanged - event for when the matchers change
-* clearIcon - alternative icon to the X
-* maxDropDownHeight - the maximium hieght of the options dropdown
-* minDropDownWidth - the minimum width of the option dropdown
-* searchStartLength - the length of text at which to look for matches
-* styles - allows styles to be set for the different components
+
+- matchers - matchers to show in the control
+- dataSources - datasources available to the control
+- defaultComparison - default comparison symbol, defaults to =
+- and - the and symbol, defaults to &
+- or - the or symbol, defaults to -
+- defaultItemLimit - default number of items to show for each datasource in the dropdown
+- simpleOperation - only allow users to selct comparisons, no brackets or and or
+- onMatchersChanged - event for when the matchers change
+- clearIcon - alternative icon to the X
+- maxDropDownHeight - the maximium hieght of the options dropdown
+- minDropDownWidth - the minimum width of the option dropdown
+- searchStartLength - the length of text at which to look for matches
+- styles - allows styles to be set for the different components
 
 ## DataSources
 
@@ -105,12 +108,13 @@ ignoreCase?: boolean
 itemLimit?: number
 searchStartLength?: number
 ```
-* Source - either a list of strings/objects, or a promise that returns a list of strings/objects
-* textGetter - if the source is an object, then this is a function to extract the display texst
-* valueGetter - if the source is an object, then this is a function to extract the value
-* ignoreCase - a boolean value to indicate if case is ignored when matching items
-* itemLimit - the maximium number of matches to shouw ina dropdown
-* searchStartLength - the text length required before datas source is searched
+
+- Source - either a list of strings/objects, or a promise that returns a list of strings/objects
+- textGetter - if the source is an object, then this is a function to extract the display texst
+- valueGetter - if the source is an object, then this is a function to extract the value
+- ignoreCase - a boolean value to indicate if case is ignored when matching items
+- itemLimit - the maximium number of matches to shouw ina dropdown
+- searchStartLength - the text length required before datas source is searched
 
 ### Match
 
@@ -119,10 +123,11 @@ match: RegExp | ((text: string) => boolean) | RegExp[] | ((text: string) => bool
 value: (text: string) => Value
 ```
 
-* match - either a regex or a function, or an array to determine if the text entered is a match
-* value - a function that can extract a value from the text
+- match - either a regex or a function, or an array to determine if the text entered is a match
+- value - a function that can extract a value from the text
 
 ## Operators and Comparisons
+
 ```js
 and the compairsons on both sides must be true
 or the comparisons on either side can be true
@@ -134,35 +139,39 @@ Comparisons can be configured as can the symbol for and/or
 ```
 
 ## Keyboard shortcuts
-* Shift + ArrowLeft - navigate through the matchers
-* Shift + ArrowRight - navigate through the matchers
-* Ctrl + ArrowLeft - move selected matcher left
-* Ctrl + ArrowRight - move selected matcher right
-* Shift + Backspace - delete previous matcher
-* Ctrl + Backspace - delete all matchers
-* ArrowUp - move to next option in the list
-* ArrowDown - move to previuos option in the list
-* PageUp - move to next data source group in the option list
-* PageDown - move to previous data source group in the option list
-* Home - move to first data source group in the option list
-* End - move to last data source group in the option list
-* Enter - select current option / enter selection
-* Tab - select current option
+
+- Shift + ArrowLeft - navigate through the matchers
+- Shift + ArrowRight - navigate through the matchers
+- Ctrl + ArrowLeft - move selected matcher left
+- Ctrl + ArrowRight - move selected matcher right
+- Shift + Backspace - delete previous matcher
+- Ctrl + Backspace - delete all matchers
+- ArrowUp - move to next option in the list
+- ArrowDown - move to previuos option in the list
+- PageUp - move to next data source group in the option list
+- PageDown - move to previous data source group in the option list
+- Home - move to first data source group in the option list
+- End - move to last data source group in the option list
+- Enter - select current option / enter selection
+- Tab - select current option
 
 ## Styling
+
 The following components can be styled
-* optionsList
-* option
-* optionCategory
-* matcherView
-* matcherViewSelected
-* atcherToolTip
-* matcherEdit
-* input
-* mutliSelect
-* errorMessage
+
+- optionsList
+- option
+- optionCategory
+- matcherView
+- matcherViewSelected
+- atcherToolTip
+- matcherEdit
+- input
+- mutliSelect
+- errorMessage
 
 ### Style structure
+
 ```js
 {
   optionsList?: React.CSSProperties
@@ -181,30 +190,35 @@ The following components can be styled
 ### Global Variables
 
 #### MultiSelect Main
-* border - --multiSelectMainBorder, default=1px solid rgb(204, 204, 204)
-* background color - --multiSelectMainBackgroundColor, default=rgb(255, 255, 255)
-* clear icon color - --multiSelectClearIcon
-* clear icon hover color - --multiSelectClearIconHoverColor, default=gray
+
+- border - --multiSelectMainBorder, default=1px solid rgb(204, 204, 204)
+- background color - --multiSelectMainBackgroundColor, default=rgb(255, 255, 255)
+- clear icon color - --multiSelectClearIcon
+- clear icon hover color - --multiSelectClearIconHoverColor, default=gray
 
 #### Matcher View
-* background-color - --matcherViewMainBackgroundColor
-* delete icon color - --matcherViewMainDeleteIconColor
-* delete icon hover - --matcherViewMainDeleteIconHowverColor - default=gray
-* warning background color - --matcherViewWarningBackgroundColor, default=orange
+
+- background-color - --matcherViewMainBackgroundColor
+- delete icon color - --matcherViewMainDeleteIconColor
+- delete icon hover - --matcherViewMainDeleteIconHowverColor - default=gray
+- warning background color - --matcherViewWarningBackgroundColor, default=orange
 
 #### ToolTip
-* background-color - --matcherViewTooltipBackgroundColor, default=rgb(255, 255, 255)
-* border - --matcherEditOptionsBorder, default=1px solid rgb(204, 204, 204)
+
+- background-color - --matcherViewTooltipBackgroundColor, default=rgb(255, 255, 255)
+- border - --matcherEditOptionsBorder, default=1px solid rgb(204, 204, 204)
 
 #### Error Message
-* background-color - --errorMessageMainBackgroundColor, default=rgb(255, 255, 255)
-* border -  --matcherEditOptionsBorder, default=1px solid rgb(204, 204, 204)
-* color --errorMessageMainErrorColor, default=red
-* icon hover color - --errorMessageMainErrorHoverColor, default=rgb(255, 124, 124)
+
+- background-color - --errorMessageMainBackgroundColor, default=rgb(255, 255, 255)
+- border - --matcherEditOptionsBorder, default=1px solid rgb(204, 204, 204)
+- color --errorMessageMainErrorColor, default=red
+- icon hover color - --errorMessageMainErrorHoverColor, default=rgb(255, 124, 124)
 
 #### Option List
-* color - --matcherEditOptionsColor, default=black
-* border - --matcherEditOptionsBorder, default=1px solid rgb(204, 204, 204)
-* background-color - --matcherEditOptionsBackgroundColor, default=rgb(255, 255, 255)
-* active opton background - --optionListActiveOption, default=lightgray
-* option category background - --matcherEditMainCategoryBackground, defalt=darkgrey
+
+- color - --matcherEditOptionsColor, default=black
+- border - --matcherEditOptionsBorder, default=1px solid rgb(204, 204, 204)
+- background-color - --matcherEditOptionsBackgroundColor, default=rgb(255, 255, 255)
+- active opton background - --optionListActiveOption, default=lightgray
+- option category background - --matcherEditMainCategoryBackground, defalt=darkgrey

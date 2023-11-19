@@ -1,7 +1,9 @@
 import * as React from 'react'
 
-const useExternalClicks = (divRef: HTMLDivElement | null, callback: () => void) => {
-
+const useExternalClicks = (
+  divRef: HTMLDivElement | null,
+  callback: () => void,
+) => {
   React.useEffect(() => {
     const mouseClick = (mouseEvent: MouseEvent) => {
       if (divRef && mouseEvent.target) {

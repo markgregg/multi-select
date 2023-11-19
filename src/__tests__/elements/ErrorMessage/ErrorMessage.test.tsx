@@ -10,23 +10,22 @@ describe('ErrorMessage', () => {
 
   it('acknowledge erroir', () => {
     let errorAcked = false
-    const result = createErrorMessage('test error', () => errorAcked = true)
+    const result = createErrorMessage('test error', () => (errorAcked = true))
     const element = result.container.querySelector('svg')
     expect(element).toBeDefined()
     element && fireEvent.click(element)
     expect(errorAcked).toBeTruthy()
   })
-
 })
 
 const createErrorMessage = (
   error: string,
-  onErrorAcknowledged?: () => void
+  onErrorAcknowledged?: () => void,
 ) => {
   return render(
     <ErrorMessage
       errorMessage={error}
       onErrorAcknowledged={onErrorAcknowledged ?? (() => console.log('acked'))}
-    />
+    />,
   )
 }

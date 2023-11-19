@@ -3,35 +3,48 @@ import { Matcher, MutliSelectStyles } from '../../types'
 import MatcherEdit from '../MatcherEdit'
 import { TiMinus } from 'react-icons/ti'
 import './MatcherView.css'
+import Nemonic from '@/component/types/Nemonic'
 
 const multiSelectPrefix = 'multi-select/matcher/'
 
 interface MatcherViewProps {
-  matcher: Matcher
-  onMatcherChanged: (matcher: Matcher) => void
-  onValidate: (matcher: Matcher) => string | null
+  matcher: Matcher | Nemonic
+  onMatcherChanged?: (matcher: Matcher) => void
+  onValidate?: (matcher: Matcher) => string | null
   onDelete: () => void
-  onSelect: () => void
-  onCancel: () => void
-  onSwapMatcher: (matcher: Matcher, swapMatcher: Matcher) => void
-  onEditPrevious: () => void
-  onEditNext: () => void
-  onChanging: () => void
-  onInsertMatcher: (matcher: Matcher) => void
+  onSelect?: () => void
+  onCancel?: () => void
+  onSwapMatcher?: (matcher: Matcher, swapMatcher: Matcher) => void
+  onEditPrevious?: () => void
+  onEditNext?: () => void
+  onChanging?: () => void
+  onInsertMatcher?: (matcher: Matcher) => void
   selected?: boolean
-  first: boolean
+  first?: boolean
   hideOperators?: boolean
   showWarning?: boolean
+  showCategory?: boolean
+  hideToolTip?: boolean
   styles?: MutliSelectStyles
 }
 
-const matcherDisplay = (matcher: Matcher, first: boolean, hideOperators: boolean): string => {
-  return `${first || hideOperators || matcher.operator === '' || matcher.comparison === ')' ? '' : ((matcher.operator === '&' ? 'and' : 'or') + ' ')}${matcher.comparison !== '=' ? matcher.comparison : ''
-    } ${matcher.text}`
+const matcherDisplay = (
+  matcher: Matcher,
+  first: boolean,
+  hideOperators: boolean,
+): string => {
+  return `${first ||
+    hideOperators ||
+    matcher.operator === '' ||
+    matcher.comparison === ')'
+    ? ''
+    : (matcher.operator === '&' ? 'and' : 'or') + ' '
+    }${matcher.comparison !== '=' ? matcher.comparison : ''} ${matcher.text}`
 }
 
 const matcherToolTip = (matcher: Matcher): string => {
-  return `${matcher.source}: ${matcher.text}${matcher.value !== matcher.text ? '(' + matcher.value + ')' : ''}`
+  return `${matcher.source}: ${matcher.text}${matcher.value !== matcher.text ? '(' + matcher.value + ')' : ''
+    }`
 }
 
 const MatcherView: React.FC<MatcherViewProps> = ({
@@ -50,8 +63,11 @@ const MatcherView: React.FC<MatcherViewProps> = ({
   first,
   hideOperators,
   showWarning,
+  showCategory,
+  hideToolTip,
   styles,
 }) => {
+  const labelRef = React.useRef<HTMLDivElement | null>(null)
   const [showToopTip, setShowToolTip] = React.useState<boolean>(false)
   const [showDelete, setShowDelete] = React.useState<boolean>(false)
 
@@ -70,10 +86,9 @@ const MatcherView: React.FC<MatcherViewProps> = ({
   const editPrevious = (deleting: boolean) => {
     if (deleting) {
       onDelete()
-    } else {
+    } else if (onEditPrevious) {
       onEditPrevious()
     }
-
   }
   const deleteMatcher = (event: React.MouseEvent) => {
     onDelete()
@@ -82,43 +97,53 @@ const MatcherView: React.FC<MatcherViewProps> = ({
 
   const matcherUpdated = (update: Matcher | null): void => {
     if (update) {
-      onMatcherChanged(update)
+      if (onMatcherChanged) {
+        onMatcherChanged(update)
+      }
     } else {
       onDelete()
     }
   }
 
   const dragMatcher = (event: React.DragEvent<HTMLDivElement>) => {
-    event.dataTransfer.setData(
-      `${multiSelectPrefix}${matcher.key}`,
-      JSON.stringify(matcher),
-    )
-    event.dataTransfer.effectAllowed = 'move'
+    if ('key' in matcher) {
+      event.dataTransfer.setData(
+        `${multiSelectPrefix}${matcher.key}`,
+        JSON.stringify(matcher),
+      )
+      event.dataTransfer.effectAllowed = 'move'
+    }
   }
 
   const dragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!event.dataTransfer.types.find((type) => type.includes(matcher.key))) {
-      event.dataTransfer.dropEffect = 'move'
-      event.preventDefault()
+    if ('key' in matcher) {
+      if (
+        !event.dataTransfer.types.find((type) => type.includes(matcher.key))
+      ) {
+        event.dataTransfer.dropEffect = 'move'
+        event.preventDefault()
+      }
     }
   }
 
   const dropMatcher = (event: React.DragEvent<HTMLDivElement>) => {
-    const dataType = event.dataTransfer.types.find((type) =>
-      type.includes(multiSelectPrefix),
-    )
-    if (dataType) {
-      const data = event.dataTransfer.getData(dataType)
-      if (data) {
-        const swapMatcher: Matcher = JSON.parse(data)
-        onSwapMatcher(matcher, swapMatcher)
+    if ('key' in matcher) {
+      const dataType = event.dataTransfer.types.find((type) =>
+        type.includes(multiSelectPrefix),
+      )
+      if (dataType) {
+        const data = event.dataTransfer.getData(dataType)
+        if (data && onSwapMatcher) {
+          const swapMatcher: Matcher = JSON.parse(data)
+          onSwapMatcher(matcher, swapMatcher)
+        }
       }
     }
   }
 
   return (
     <div
-      id={matcher.key + '_view'}
+      id={'key' in matcher ? matcher.key + '_view' : 'function_view'}
       className="matcherViewMain"
       style={selected ? styles?.matcherViewSelected : styles?.matcherView}
       onClick={onSelect}
@@ -132,14 +157,14 @@ const MatcherView: React.FC<MatcherViewProps> = ({
       {showDelete && !selected && (
         <TiMinus className="deleteIcon" onClick={deleteMatcher} />
       )}
-      {selected ? (
+      {selected && 'key' in matcher ? (
         <MatcherEdit
           matcher={matcher}
           onMatcherChanged={matcherUpdated}
           onValidate={onValidate}
           onCancel={onCancel}
           inFocus={true}
-          first={first}
+          first={first ?? false}
           styles={styles}
           isActive={selected}
           onEditNext={onEditNext}
@@ -149,23 +174,47 @@ const MatcherView: React.FC<MatcherViewProps> = ({
         />
       ) : (
         <>
-          {showToopTip && (
+          {!hideToolTip && showToopTip && 'key' in matcher && (
             <div
               id={matcher.key + '_tool_tip'}
-              className='matcherViewToolTip'
-              style={styles?.matcherToolTip}
+              className="matcherViewToolTip"
+              style={{
+                top: (labelRef.current?.clientHeight ?? 10) * -1 - 4,
+                ...styles?.matcherToolTip,
+              }}
             >
               {matcherToolTip(matcher)}
             </div>
           )}
-          <span
+          <div
             onMouseEnter={() => setShowToolTip(true)}
             onMouseLeave={() => setShowToolTip(false)}
-            id={matcher.key + '_label'}
-            className={showWarning ? 'matcherViewWarning' : ''}
+            className={'matcherViewContainer'}
+            style={
+              'key' in matcher && matcher.source !== ''
+                ? {}
+                : {
+                  alignSelf: 'end'
+                }
+            }
           >
-            {matcherDisplay(matcher, first, hideOperators ?? false)}
-          </span>
+            {showCategory && 'key' in matcher && (
+              <div className="matchViewCategory">{matcher.source}</div>
+            )}
+            <div
+              ref={labelRef}
+              id={'key' in matcher ? matcher.key + '_label' : 'function_label'}
+              className={showWarning ? 'matcherViewWarning' : ''}
+            >
+              {'key' in matcher
+                ? matcherDisplay(
+                  matcher,
+                  first ?? false,
+                  hideOperators ?? false,
+                )
+                : matcher.name}
+            </div>
+          </div>
         </>
       )}
     </div>

@@ -10,40 +10,47 @@ import {
   SourceItem,
   defaultComparison,
   stringComparisons,
-  numberComparisons
+  numberComparisons,
+  Selection,
 } from './types'
 import { isUnique } from './utils'
-import { hasFocusContext, configContext, ITEM_LIMIT } from './state/context'
+import {
+  hasFocusContext,
+  configContext,
+  selectionContext,
+  ITEM_LIMIT,
+} from './state/context'
 import MatcherView from './elements/MatcherView'
-import MatcherEdit, { MatcherEditApi } from './elements/MatcherEdit'
+import MatcherEdit from './elements/MatcherEdit'
 import { checkBracket, validateMatcher } from './MultiSelectFunctions'
 import { MdClear } from 'react-icons/md'
 import useExternalClicks from './hooks/useExternalClicks/useExternalClicks'
 import './MultiSelect.css'
-import MenuBar from './elements/MenuBar'
+import Nemonic from './types/Nemonic'
 
 interface MultiSelectProps {
   matchers?: Matcher[]
   dataSources: DataSource[]
-  defaultComparison?: string,
-  and?: string,
-  or?: string,
+  functions?: Nemonic[]
+  defaultComparison?: string
+  and?: string
+  or?: string
   defaultItemLimit?: number
   simpleOperation?: boolean
   onMatchersChanged?: (matchers: Matcher[]) => void
-  onComplete?: () => void
+  onComplete?: (matchers: Matcher[], func?: string) => void
+  onCompleteError?: (func: string, missingFields: string[]) => void
   clearIcon?: React.ReactElement
   maxDropDownHeight?: number
   minDropDownWidth?: number
   searchStartLength?: number
+  showCategories?: boolean
+  hideToolTip?: boolean
   styles?: MutliSelectStyles
-  showMenuBar?: boolean
 }
 
 const comparisonsFromDataSources = (dataSources: DataSource[]): string[] => {
-  return dataSources
-    .flatMap(ds => ds.comparisons)
-    .filter(isUnique)
+  return dataSources.flatMap((ds) => ds.comparisons).filter(isUnique)
 }
 
 const MultiSelect: React.FC<MultiSelectProps> = ({
@@ -52,31 +59,39 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   and,
   or,
   dataSources,
+  functions,
   defaultItemLimit,
   simpleOperation,
   onMatchersChanged,
   onComplete,
+  onCompleteError,
   clearIcon,
   maxDropDownHeight,
   minDropDownWidth,
   searchStartLength,
+  showCategories,
+  hideToolTip,
   styles,
-  showMenuBar
 }) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null)
   const editDivRef = React.useRef<HTMLDivElement | null>(null)
   const [hasFocus, setHasFocus] = React.useState<boolean>(false)
-  const [showMenu, setShowMenu] = React.useState<boolean>(false)
   const [activeMatcher, setActiveMatcher] = React.useState<number | null>(null)
   const [currentMatchers, setCurrentMatchers] = React.useState<Matcher[]>(
     matchers ?? [],
   )
-  const [mismatchedBrackets, setMismatchedBrackets] = React.useState<number[]>([])
+  const [mismatchedBrackets, setMismatchedBrackets] = React.useState<number[]>(
+    [],
+  )
   const [inEdit, setInEdit] = React.useState<boolean>(false)
-  const [editAPI, setEditApi] = React.useState<MatcherEditApi>()
+  const [activeFunction, setActiveFunction] = React.useState<Nemonic | null>(
+    null,
+  )
+
   const config = React.useMemo<Config>(() => {
     return {
       dataSources,
+      functions,
       defaultComparison: defaultComparison ?? '=',
       and: and ?? '&',
       or: or ?? '|',
@@ -85,9 +100,20 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       simpleOperation: simpleOperation ?? false,
       maxDropDownHeight,
       minDropDownWidth,
-      searchStartLength
+      searchStartLength,
     }
-  }, [dataSources, defaultComparison, and, or, defaultItemLimit, simpleOperation, maxDropDownHeight, minDropDownWidth, searchStartLength])
+  }, [
+    dataSources,
+    functions,
+    defaultComparison,
+    and,
+    or,
+    defaultItemLimit,
+    simpleOperation,
+    maxDropDownHeight,
+    minDropDownWidth,
+    searchStartLength,
+  ])
 
   React.useEffect(() => {
     if (!inEdit) {
@@ -97,19 +123,23 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     }
   }, [matchers])
 
-  const gotFocus = () => {
-    setShowMenu(true);
-  }
-
   const clickedAway = React.useCallback(() => {
-    setShowMenu(false)
     setHasFocus(false)
   }, [])
 
   useExternalClicks(editDivRef.current, clickedAway)
 
-  const editFocus = () => {
+  const clearActiveMatcher = () => {
     setActiveMatcher(null)
+    inputRef.current?.focus()
+  }
+
+  const deleteActiveFunction = () => {
+    setActiveFunction(null)
+  }
+
+  const editFocus = () => {
+    clearActiveMatcher()
     setHasFocus(true)
   }
 
@@ -119,9 +149,22 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     }
   }
 
+  const validateFunction = (): boolean => {
+    if (activeFunction?.requiredDataSources) {
+      const missing = activeFunction.requiredDataSources.filter(ds => !currentMatchers.find(m => m.source === ds))
+      if (missing.length > 0) {
+        if (onCompleteError) {
+          onCompleteError(activeFunction.name, missing)
+        }
+        return false
+      }
+    }
+    return true
+  }
+
   const validateBrackets = (newMatchers: Matcher[]) => {
     const missingBracketIndexes: number[] = []
-    const brackets = newMatchers.map(m => m.comparison)
+    const brackets = newMatchers.map((m) => m.comparison)
     checkBracket(brackets, missingBracketIndexes, true)
     checkBracket(brackets, missingBracketIndexes, false)
     setMismatchedBrackets(missingBracketIndexes)
@@ -138,18 +181,21 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       mat.key === matcher.key ? matcher : mat,
     )
     updatedMatchers(newMatchers)
-    setActiveMatcher(null)
+    clearActiveMatcher()
   }
 
   const deleteLast = () => {
     if (currentMatchers.length > 0) {
       deleteMatcher(currentMatchers[currentMatchers.length - 1])
+    } else if (activeFunction != null) {
+      setActiveFunction(null)
     }
   }
 
   const deleteAll = () => {
     updatedMatchers([])
-    setActiveMatcher(null)
+    clearActiveMatcher()
+    setActiveFunction(null)
   }
 
   const editLast = () => {
@@ -165,9 +211,11 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   }
 
   const editNext = () => {
-    if (currentMatchers.length > 0 &&
+    if (
+      currentMatchers.length > 0 &&
       activeMatcher !== null &&
-      activeMatcher < currentMatchers.length - 1) {
+      activeMatcher < currentMatchers.length - 1
+    ) {
       setActiveMatcher(activeMatcher + 1)
     }
   }
@@ -179,9 +227,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       activeMatcher !== null &&
       (forceClearActivematcher || activeMatcher > currentMatchers.length - 1)
     ) {
-      setActiveMatcher(null)
+      clearActiveMatcher()
     }
-    inputRef.current?.focus()
   }
 
   const addMatcher = (matcher: Matcher | null): void => {
@@ -217,12 +264,17 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
   const matcherChanging = (matcher: Matcher) => {
     setInEdit(true)
-    notifyMatchersChanged(currentMatchers.filter(m => matcher.key !== m.key))
+    notifyMatchersChanged(currentMatchers.filter((m) => matcher.key !== m.key))
   }
 
-  const insertMatcher = (newMatcher: Matcher, currentMatcher: Matcher | null) => {
+  const insertMatcher = (
+    newMatcher: Matcher,
+    currentMatcher: Matcher | null,
+  ) => {
     if (currentMatcher) {
-      const index = currentMatchers.findIndex(m => m.key === currentMatcher.key)
+      const index = currentMatchers.findIndex(
+        (m) => m.key === currentMatcher.key,
+      )
       currentMatchers.splice(index, 0, newMatcher)
       setCurrentMatchers([...currentMatchers])
       if (activeMatcher != null && index <= activeMatcher) {
@@ -279,6 +331,9 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         break
       case 'Backspace':
         if (event.shiftKey) {
+          if (currentMatchers.length === 0) {
+            setActiveFunction(null)
+          }
           deleteLast()
           event.preventDefault()
         } else if (event.ctrlKey) {
@@ -288,84 +343,101 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         break
       case 'Enter':
         if (onComplete) {
-          onComplete()
+          if (validateFunction()) {
+            onComplete(currentMatchers, activeFunction?.name)
+            setCurrentMatchers([])
+            setActiveMatcher(null)
+            setActiveFunction(null)
+          }
         }
         event.preventDefault()
         break
     }
   }
 
+  const selection: Selection = {
+    matchers: currentMatchers,
+    activeFunction,
+  }
+
   return (
     <hasFocusContext.Provider value={hasFocus}>
       <configContext.Provider value={config}>
-        <div
-          onMouseEnter={gotFocus}
-          id="MultiSelect"
-          style={styles?.mutliSelect}
-          className="multiSelectMain"
-          ref={editDivRef}
-          onKeyDown={handleKeyPress}
-        >
-          {
-            currentMatchers.length > 0 && <div
-              className='multiSelectClearIcon'
-              onClick={() => deleteAll()}
-            >
-              {
-                clearIcon
-                  ? clearIcon
-                  : <MdClear />
-              }
-            </div>
-          }
-          {
-            currentMatchers?.map((matcher, index) => (
+        <selectionContext.Provider value={selection}>
+          <div
+            id="MultiSelect"
+            style={styles?.mutliSelect}
+            className="multiSelectMain"
+            ref={editDivRef}
+            onKeyDown={handleKeyPress}
+          >
+            {currentMatchers.length > 0 && (
+              <div className="multiSelectClearIcon" onClick={() => deleteAll()}>
+                {clearIcon ? clearIcon : <MdClear />}
+              </div>
+            )}
+            {activeFunction && (
+              <MatcherView
+                key={'function'}
+                matcher={activeFunction}
+                onDelete={deleteActiveFunction}
+              />
+            )}
+            {currentMatchers?.map((matcher, index) => (
               <MatcherView
                 key={matcher.key}
                 matcher={matcher}
                 onMatcherChanged={updateMatcher}
-                onValidate={m => validateMatcher(currentMatchers, dataSources, m)}
+                onValidate={(m) =>
+                  validateMatcher(currentMatchers, dataSources, m)
+                }
                 onDelete={() => deleteMatcher(matcher, true)}
                 onSelect={() => selectMatcher(index)}
-                onCancel={() => setActiveMatcher(null)}
+                onCancel={() => clearActiveMatcher()}
                 onSwapMatcher={swapMatchers}
                 onEditPrevious={editLast}
                 onEditNext={editNext}
                 onChanging={() => matcherChanging(matcher)}
-                onInsertMatcher={newMatcher => insertMatcher(newMatcher, matcher)}
+                onInsertMatcher={(newMatcher) =>
+                  insertMatcher(newMatcher, matcher)
+                }
                 selected={index === activeMatcher}
-                first={index === 0 || currentMatchers[index - 1].comparison === '('}
+                first={
+                  index === 0 || currentMatchers[index - 1].comparison === '('
+                }
                 hideOperators={simpleOperation}
                 showWarning={mismatchedBrackets.includes(index)}
+                showCategory={showCategories}
+                hideToolTip={hideToolTip}
                 styles={styles}
               />
-            ))
-          }
-          {
-            <MatcherEdit
-              ref={inputRef}
-              onMatcherChanged={addMatcher}
-              onValidate={m => validateMatcher(currentMatchers, dataSources, m)}
-              onFocus={editFocus}
-              inFocus={activeMatcher === null}
-              first={currentMatchers.length === 0}
-              isActive={true}
-              onEditPrevious={editLast}
-              onEditNext={editNext}
-              onInsertMatcher={newMatcher => insertMatcher(newMatcher, null)}
-              styles={styles}
-              onAPIAvailable={setEditApi}
-            />
-          }
-          {
-            (showMenuBar ?? true) && showMenu &&
-            <MenuBar onItemSelected={(s, opt) => {
-              if (editAPI) {
-                editAPI.setOperator(typeof opt === 'string' ? opt : opt.text)
-              }
-            }} />
-          }
-        </div>
+            ))}
+            {
+              <MatcherEdit
+                ref={inputRef}
+                onMatcherChanged={addMatcher}
+                onValidate={(m) =>
+                  validateMatcher(currentMatchers, dataSources, m)
+                }
+                onFocus={editFocus}
+                inFocus={activeMatcher === null}
+                first={currentMatchers.length === 0}
+                allowFunctions={currentMatchers.length === 0 && activeFunction === null}
+                isActive={true}
+                onEditPrevious={editLast}
+                onEditNext={editNext}
+                onInsertMatcher={(newMatcher) =>
+                  insertMatcher(newMatcher, null)
+                }
+                onSetActiveFunction={(activeFunction) =>
+                  setActiveFunction(activeFunction)
+                }
+                onDeleteActiveFunction={deleteActiveFunction}
+                styles={styles}
+              />
+            }
+          </div>
+        </selectionContext.Provider>
       </configContext.Provider>
     </hasFocusContext.Provider>
   )
@@ -379,12 +451,7 @@ export type {
   Option,
   Value,
   OperatorDisplay,
-  SourceItem
+  SourceItem,
 }
-export {
-  defaultComparison,
-  stringComparisons,
-  numberComparisons,
-  isUnique
-}
+export { defaultComparison, stringComparisons, numberComparisons, isUnique }
 export default MultiSelect

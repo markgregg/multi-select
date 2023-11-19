@@ -3,35 +3,40 @@ import DataSource, {
   DataSourceLookup,
   SourceItem,
 } from '../../types/DataSource'
-import { Matcher, Option, Config } from '../../types'
-import { hasFocusContext, configContext } from '../../state/context'
+import { Matcher, Option, Config, Selection } from '../../types'
+import {
+  hasFocusContext,
+  configContext,
+  selectionContext,
+} from '../../state/context'
 import { guid, mapOptions } from '../../utils'
 import OptionList from '../OptionList'
 import MutliSelectStyles from '../../types/MutliSelectStyles'
 import ErrorMessage from '../ErrorMessage'
 import './MatcherEdit.css'
-
-export interface MatcherEditApi {
-  setOperator: (op: string) => void
-  setComparison: (comp: string) => void
-}
+import Nemonic from '@/component/types/Nemonic'
+import { FUNC_ID } from '@/component/types/Opton'
 
 interface MatcherEditProps {
   matcher?: Matcher
   onMatcherChanged: (matcher: Matcher | null) => void
-  onValidate: (matcher: Matcher) => string | null
+  onValidate?: (matcher: Matcher) => string | null
   onFocus?: () => void
   onCancel?: () => void
   onEditPrevious: (deleting: boolean) => void
-  onEditNext: () => void
+  onEditNext?: () => void
   onChanging?: () => void
-  onInsertMatcher: (matcher: Matcher) => void
-  onAPIAvailable?: (api: MatcherEditApi) => void
+  onInsertMatcher?: (matcher: Matcher) => void
+  onSetActiveFunction?: (activeFunction: Nemonic) => void
+  onDeleteActiveFunction?: () => void
   inFocus?: boolean
   first: boolean
+  allowFunctions?: boolean
   isActive?: boolean
   styles?: MutliSelectStyles
 }
+
+const FUNCTIONS_TEXT = 'Functions'
 
 const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
   (props, ref) => {
@@ -46,17 +51,19 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       onInsertMatcher,
       inFocus,
       first,
+      allowFunctions,
       isActive,
       styles,
       onChanging,
-      onAPIAvailable
+      onSetActiveFunction,
+      onDeleteActiveFunction,
     } = props
     const config = React.useContext<Config>(configContext)
     const inputRef = React.useRef<HTMLInputElement | null>(null)
     const [text, setText] = React.useState<string>(
       matcher
-        ? `${!first && !config.simpleOperation ? matcher.operator + ' ' : ''}${matcher.comparison}${matcher.text
-        }`
+        ? `${!first && !config.simpleOperation ? matcher.operator + ' ' : ''}${matcher.comparison
+        }${matcher.text}`
         : '',
     )
     const [comparison, setComparison] = React.useState<string>(
@@ -70,23 +77,11 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const [totalOptions, setTotalOptions] = React.useState<number>(0)
     const [activeOption, setActiveOption] = React.useState<number | null>(null)
     const [error, setError] = React.useState<string | null>(null)
-    const [notifiedChanging, setNotifiedChaning] = React.useState<boolean>(false)
+    const [notifiedChanging, setNotifiedChaning] =
+      React.useState<boolean>(false)
 
     const controlHasFocus = React.useContext<boolean>(hasFocusContext)
-
-    React.useEffect(() => {
-      if (onAPIAvailable) {
-        const api: MatcherEditApi = {
-          setComparison(comp) {
-            setText(comp)
-          },
-          setOperator(op) {
-            setText(op)
-          },
-        }
-        onAPIAvailable(api)
-      }
-    }, [])
+    const selection = React.useContext<Selection>(selectionContext)
 
     React.useEffect(() => {
       if (isActive) {
@@ -97,6 +92,13 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     React.useEffect(() => {
       setError(null)
     }, [first])
+
+    const resetEdit = () => {
+      setText('')
+      setOptions([])
+      setTotalOptions(0)
+      setActiveOption(null)
+    }
 
     const checkForOperator = (searchText: string): string => {
       if (searchText.length > 2) {
@@ -131,16 +133,16 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       }
 
       const symbol = searchText[0]
-      if (!config.simpleOperation && (
-        symbol === '(' ||
-        symbol === ')')) {
+      if (
+        !config.simpleOperation &&
+        (!selection.activeFunction || !selection.activeFunction.noBrackets) &&
+        (symbol === '(' || symbol === ')')
+      ) {
         selectOption(symbol)
         return null
       }
 
-      if (
-        config.comparisons.includes(symbol)
-      ) {
+      if (config.comparisons.includes(symbol)) {
         setComparison(symbol)
         return searchText.substring(1).trim()
       }
@@ -149,7 +151,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
 
     const limitOptions = (
       ds: DataSourceLookup,
-      options: Option[]
+      options: Option[],
     ): Option[] => {
       if (options.length > (ds.itemLimit ?? config.defaultItemLimit)) {
         return options.slice(0, ds.itemLimit ?? config.defaultItemLimit)
@@ -177,6 +179,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       if (ds.precedence) {
         const dsp = ds.precedence
         return allOptions.findIndex((item) => {
+          if (item[0] === FUNCTIONS_TEXT) return false
           const ds2 = config.dataSources.find((dsc) => dsc.title === item[0])
           return dsp > (ds2?.precedence ?? 0)
         })
@@ -187,9 +190,17 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const combineOptions = (
       ds: DataSourceLookup,
       list1: Option[],
-      list2: Option[]
+      list2: Option[],
     ): Option[] => {
-      return limitOptions(ds, list1.concat(list2).filter((opt, index, array) => array.findIndex(o => o.value === opt.value) === index))
+      return limitOptions(
+        ds,
+        list1
+          .concat(list2)
+          .filter(
+            (opt, index, array) =>
+              array.findIndex((o) => o.value === opt.value) === index,
+          ),
+      )
     }
 
     const addOptions = (
@@ -197,7 +208,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       ds: DataSourceLookup,
       options: Option[],
     ) => {
-      const currentEntry = allOptions.find(entry => entry[0] === ds.title)
+      const currentEntry = allOptions.find((entry) => entry[0] === ds.title)
       if (currentEntry) {
         currentEntry[1] = combineOptions(ds, currentEntry[1], options)
         return
@@ -249,7 +260,10 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       let totalCount = 0
       if (newText.length > 0) {
         let searchText = newText.trim()
-        if (!config.simpleOperation) {
+        if (
+          !config.simpleOperation &&
+          (!selection.activeFunction || !selection.activeFunction.noAndOr)
+        ) {
           searchText = checkForOperator(searchText)
         }
         const result = checkForComparison(searchText)
@@ -258,41 +272,60 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
         }
         searchText = result
         if (searchText.length > (config.searchStartLength ?? 0)) {
+          if (allowFunctions && config.functions) {
+            const functions = config.functions
+              .filter((func) =>
+                func.name.toUpperCase().includes(searchText.toUpperCase()),
+              )
+              .map((func) => {
+                return {
+                  source: FUNC_ID,
+                  text: func.name,
+                  value: func.name,
+                }
+              })
+            if (functions.length > 0) {
+              allOptions.push([FUNCTIONS_TEXT, functions])
+              totalCount += functions.length
+            }
+          }
           config.dataSources.forEach((ds) => {
-            if ('source' in ds) {
-              if (searchText.length > (ds.searchStartLength ?? 0)) {
-                if (typeof ds.source === 'function') {
-                  ds.source(searchText).then((items) => {
+            if ((!selection.activeFunction && !ds.functional) ||
+              (selection.activeFunction && (
+                selection.activeFunction.requiredDataSources?.includes(ds.name) ||
+                selection.activeFunction.optionalDataSources?.includes(ds.name)))
+            ) {
+              if ('source' in ds) {
+                if (searchText.length > (ds.searchStartLength ?? 0)) {
+                  if (typeof ds.source === 'function') {
+                    ds.source(searchText, selection.matchers).then((items) => {
+                      if (currentKey === key.current) {
+                        totalCount += updateOptions(items, ds, allOptions)
+                        updateState(allOptions, totalCount)
+                      }
+                    })
+                  } else {
                     if (currentKey === key.current) {
-                      totalCount += updateOptions(items, ds, allOptions)
-                      updateState(allOptions, totalCount)
-                    }
-                  })
-                } else {
-                  if (currentKey === key.current) {
-                    const items = ds.source.filter((item) =>
-                      matchItems(item, ds, searchText),
-                    )
-                    if (items.length > 0) {
-                      totalCount += updateOptions(
-                        items,
-                        ds,
-                        allOptions,
+                      const items = ds.source.filter((item) =>
+                        matchItems(item, ds, searchText),
                       )
+                      if (items.length > 0) {
+                        totalCount += updateOptions(items, ds, allOptions)
+                      }
                     }
                   }
                 }
+              } else if (
+                ((ds.match instanceof RegExp && searchText.match(ds.match)) ||
+                  (typeof ds.match === 'function' && ds.match(searchText))) &&
+                currentKey === key.current
+              ) {
+                const value = ds.value(searchText)
+                insertOptions(allOptions, ds, [
+                  { source: ds.name, value, text: value.toString() },
+                ])
+                totalCount += 1
               }
-            } else if (
-              ((ds.match instanceof RegExp && searchText.match(ds.match)) ||
-                (typeof ds.match === 'function' && ds.match(searchText))) &&
-              currentKey === key.current
-            ) {
-              const value = ds.value(searchText)
-              insertOptions(allOptions, ds, [
-                { source: ds.name, value, text: value.toString() },
-              ])
-              totalCount += 1
             }
           })
         }
@@ -349,20 +382,26 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       setError(null)
       switch (event.code) {
         case 'ArrowLeft':
-          if (inputRef.current &&
+          if (
+            inputRef.current &&
             !event.ctrlKey &&
             !event.shiftKey &&
-            event.currentTarget.selectionStart === 0) {
+            event.currentTarget.selectionStart === 0
+          ) {
             onEditPrevious(false)
             event.preventDefault()
             event.stopPropagation()
           }
           break
         case 'ArrowRight':
-          if (inputRef.current &&
+          if (
+            inputRef.current &&
             !event.ctrlKey &&
             !event.shiftKey &&
-            event.currentTarget.selectionStart === event.currentTarget.value.length) {
+            event.currentTarget.selectionStart ===
+            event.currentTarget.value.length &&
+            onEditNext
+          ) {
             onEditNext()
             event.preventDefault()
             event.stopPropagation()
@@ -419,10 +458,20 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           if (options.length > 0 && activeOption !== null) {
             const optionsArray = options.flatMap((pair) => pair[1])
             if (optionsArray.length > activeOption) {
-              if (event.shiftKey) {
-                insertMatcher(optionsArray[activeOption])
+              if (optionsArray[activeOption].source === FUNC_ID) {
+                const func = config.functions?.find(
+                  (func) => func.name === optionsArray[activeOption].text,
+                )
+                if (func && onSetActiveFunction) {
+                  onSetActiveFunction(func)
+                  resetEdit()
+                }
               } else {
-                selectOption(optionsArray[activeOption])
+                if (event.shiftKey) {
+                  insertMatcher(optionsArray[activeOption])
+                } else {
+                  selectOption(optionsArray[activeOption])
+                }
               }
               event.preventDefault()
               event.stopPropagation()
@@ -440,10 +489,15 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
         case 'Backspace':
           if (text.length === 0) {
             if (onEditPrevious && !event.shiftKey && !event.ctrlKey) {
-              onEditPrevious(true)
+              if (first && onDeleteActiveFunction) {
+                onDeleteActiveFunction()
+              } else {
+                onEditPrevious(true)
+              }
               event.preventDefault()
               event.stopPropagation()
-            } else if (onCancel) { //not standalone edit
+            } else if (onCancel) {
+              //not standalone edit
               selectOption()
               event.preventDefault()
               event.stopPropagation()
@@ -481,12 +535,12 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           key: matcher?.key ?? guid(),
           operator: option === ')' ? '' : operator,
           comparison: option === '(' || option === ')' ? option : comparison,
-          source: (typeof option === 'object') ? option.source : '',
-          value: (typeof option === 'object') ? option.value : '',
-          text: (typeof option === 'object') ? option.text : '',
+          source: typeof option === 'object' ? option.source : '',
+          value: typeof option === 'object' ? option.value : '',
+          text: typeof option === 'object' ? option.text : '',
         }
         : null
-      if (newMatcher) {
+      if (newMatcher && onValidate) {
         const err = onValidate(newMatcher)
         if (err) {
           setError(err)
@@ -498,9 +552,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
 
     const insertMatcher = (option?: Option | '(' | ')') => {
       const newMatcher = validate(option)
-      if (newMatcher !== false &&
-        newMatcher !== null &&
-        onInsertMatcher) {
+      if (newMatcher !== false && newMatcher !== null && onInsertMatcher) {
         onInsertMatcher(newMatcher)
       }
     }
@@ -509,23 +561,19 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       const newMatcher = validate(option)
       if (newMatcher !== false) {
         onMatcherChanged(newMatcher)
-        setText('')
-        setOptions([])
-        setTotalOptions(0)
-        setActiveOption(null)
+        resetEdit()
       }
     }
 
     return (
       <div className="matcherEditMain" style={styles?.matcherEdit}>
-        {
-          error &&
+        {error && (
           <ErrorMessage
             errorMessage={error}
             onErrorAcknowledged={() => setError(null)}
             style={styles?.errorMessage}
           />
-        }
+        )}
         <input
           id={(matcher?.key ?? 'edit') + '_input'}
           style={styles?.input}

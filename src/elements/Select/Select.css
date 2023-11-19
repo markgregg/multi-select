@@ -15,7 +15,10 @@
   animation: growDown 400ms ease-in-out forwards;
   transform-origin: top center;
   z-index: 999;
-  background-color: var(--matcherEditOptionsBackgroundColor, rgb(255, 255, 255));
+  background-color: var(
+    --matcherEditOptionsBackgroundColor,
+    rgb(255, 255, 255)
+  );
   width: 100px;
 }
 

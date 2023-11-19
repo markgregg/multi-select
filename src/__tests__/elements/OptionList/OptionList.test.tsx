@@ -84,7 +84,7 @@ const checkClassText = (
     type === 'c'
       ? 'optionListCategory'
       : type === 'o'
-        ? 'optionListOption'
-        : 'optionListOption optionListActiveOption',
+      ? 'optionListOption'
+      : 'optionListOption optionListActiveOption',
   )
 }

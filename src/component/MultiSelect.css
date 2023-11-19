@@ -4,8 +4,7 @@
   flex-flow: wrap;
   border: var(--multiSelectMainBorder, 1px solid rgb(204, 204, 204));
   border-radius: 4px;
-  background: var(--multiSelectMainBackgroundColor,
-      rgb(255, 255, 255));
+  background: var(--multiSelectMainBackgroundColor, rgb(255, 255, 255));
   gap: 2px;
   padding: 2px;
 }

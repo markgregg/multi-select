@@ -23,7 +23,7 @@ const OptionList: React.FC<OptionListProps> = ({
 
   React.useEffect(() => {
     if (activeItemRef.current && activeItemRef.current.scrollIntoView) {
-      activeItemRef.current.scrollIntoView({ block: "end", behavior: "smooth" })
+      activeItemRef.current.scrollIntoView({ block: 'end', behavior: 'smooth' })
     }
   }, [activeOption])
 
@@ -45,19 +45,14 @@ const OptionList: React.FC<OptionListProps> = ({
             const idx = cnt++
             return (
               <li
-                ref={idx === activeOption
-                  ? activeItemRef
-                  : undefined
-                }
+                ref={idx === activeOption ? activeItemRef : undefined}
                 className={
                   idx === activeOption
                     ? 'optionListOption optionListActiveOption'
                     : 'optionListOption'
                 }
                 style={
-                  idx === activeOption
-                    ? styles?.activeOption
-                    : styles?.option
+                  idx === activeOption ? styles?.activeOption : styles?.option
                 }
                 key={option.value.toString()}
                 onMouseEnter={() => onSelectActiveOption(idx)}
@@ -74,16 +69,14 @@ const OptionList: React.FC<OptionListProps> = ({
 
   const listStyle = {
     ...styles?.optionsList,
-    ...(config.maxDropDownHeight ? { maxHeight: config.maxDropDownHeight } : {}),
-    ...(config.minDropDownWidth ? { minWidth: config.minDropDownWidth } : {})
+    ...(config.maxDropDownHeight
+      ? { maxHeight: config.maxDropDownHeight }
+      : {}),
+    ...(config.minDropDownWidth ? { minWidth: config.minDropDownWidth } : {}),
   }
 
   return (
-    <div
-      id="option_list"
-      className="optionListMain"
-      style={listStyle}
-    >
+    <div id="option_list" className="optionListMain" style={listStyle}>
       {showOptions()}
     </div>
   )

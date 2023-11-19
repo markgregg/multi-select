@@ -28,8 +28,7 @@ export default defineConfig({
       entry: path.resolve('src', 'component', 'MultiSelect.tsx'),
       name: 'MultiSelect',
       formats: ['es', 'cjs'],
-      fileName: (format) =>
-        `MultiSelect.${format === 'cjs' ? 'cjs' : 'js'}`,
+      fileName: (format) => `MultiSelect.${format === 'cjs' ? 'cjs' : 'js'}`,
     },
     rollupOptions: {
       external: [...Object.keys(packageJson.peerDependencies)],

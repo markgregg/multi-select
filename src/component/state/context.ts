@@ -1,3 +1,4 @@
+import { Selection } from '../types'
 import Config from '../types/Config'
 import * as React from 'react'
 
@@ -13,5 +14,9 @@ const configContext = React.createContext<Config>({
   simpleOperation: false,
   defaultItemLimit: ITEM_LIMIT,
 })
+const selectionContext = React.createContext<Selection>({
+  matchers: [],
+  activeFunction: null,
+})
 
-export { hasFocusContext, configContext, ITEM_LIMIT }
+export { hasFocusContext, configContext, selectionContext, ITEM_LIMIT }

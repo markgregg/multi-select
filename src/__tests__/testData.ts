@@ -52,7 +52,9 @@ const testDataSources: DataSource[] = [
         setTimeout(
           () =>
             resolve(
-              ['delayed', 'aploked', 'loadxx'].filter((item) => item.includes(text))
+              ['delayed', 'aploked', 'loadxx'].filter((item) =>
+                item.includes(text),
+              ),
             ),
           250,
         )
@@ -181,5 +183,5 @@ export {
   testConfig,
   testDataSources,
   openBracket,
-  closeBracket
+  closeBracket,
 }

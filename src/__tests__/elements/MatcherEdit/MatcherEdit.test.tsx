@@ -3,9 +3,21 @@ import {
   hasFocusContext,
   configContext,
 } from '../../../component/state/context'
-import { RenderResult, act, fireEvent, render, waitFor } from '@testing-library/react'
+import {
+  RenderResult,
+  act,
+  fireEvent,
+  render,
+  waitFor,
+} from '@testing-library/react'
 import Matcher from '../../../component/types/Matcher'
-import { closeBracket, openBracket, singleMatcher, testConfig, testDataSources } from '../../testData'
+import {
+  closeBracket,
+  openBracket,
+  singleMatcher,
+  testConfig,
+  testDataSources,
+} from '../../testData'
 import { Config } from '@/component/types'
 
 describe('MatcherEdit', () => {
@@ -259,7 +271,7 @@ describe('MatcherEdit', () => {
 
   it('test old promises ignored ', async () => {
     const result = createMatcherEdit(false, undefined, {
-      inFocus: true
+      inFocus: true,
     })
     const input = result.container.querySelector('#edit_input')
     expect(input).toBeDefined()
@@ -277,10 +289,22 @@ describe('MatcherEdit', () => {
         defaultComparison: '=',
         and: '&',
         or: '|',
-        comparisons: ['=', '!', '*', '!*', '<*', '>*', '>', '<', '>=', '<=', '!'],
+        comparisons: [
+          '=',
+          '!',
+          '*',
+          '!*',
+          '<*',
+          '>*',
+          '>',
+          '<',
+          '>=',
+          '<=',
+          '!',
+        ],
         simpleOperation: true,
         defaultItemLimit: 10,
-      }
+      },
     })
     const input = result.container.querySelector('#test_input')
     expect(input).toHaveValue('=text')
@@ -294,10 +318,22 @@ describe('MatcherEdit', () => {
         defaultComparison: '=',
         and: '&',
         or: '|',
-        comparisons: ['=', '!', '*', '!*', '<*', '>*', '>', '<', '>=', '<=', '!'],
+        comparisons: [
+          '=',
+          '!',
+          '*',
+          '!*',
+          '<*',
+          '>*',
+          '>',
+          '<',
+          '>=',
+          '<=',
+          '!',
+        ],
         simpleOperation: true,
         defaultItemLimit: 10,
-      }
+      },
     })
     const input = result.container.querySelector('#test_input')
     expect(input).toHaveValue('(')
@@ -311,10 +347,22 @@ describe('MatcherEdit', () => {
         defaultComparison: '=',
         and: '&',
         or: '|',
-        comparisons: ['=', '!', '*', '!*', '<*', '>*', '>', '<', '>=', '<=', '!'],
+        comparisons: [
+          '=',
+          '!',
+          '*',
+          '!*',
+          '<*',
+          '>*',
+          '>',
+          '<',
+          '>=',
+          '<=',
+          '!',
+        ],
         simpleOperation: true,
         defaultItemLimit: 10,
-      }
+      },
     })
     const input = result.container.querySelector('#test_input')
     expect(input).toHaveValue(')')
@@ -349,9 +397,6 @@ describe('MatcherEdit', () => {
     input && act(() => fireEvent.change(input, { target: { value: ')' } }))
     expect(matcher?.comparison).toBe(')')
   })
-
-
-
 })
 
 const createMatcherEdit = (
@@ -367,7 +412,7 @@ const createMatcherEdit = (
     onEditPrevious?: () => void
     onEditNext?: () => void
     config?: Config
-  }
+  },
 ) => {
   return render(
     <hasFocusContext.Provider value={true}>
@@ -375,21 +420,20 @@ const createMatcherEdit = (
         <MatcherEdit
           matcher={matcher}
           onMatcherChanged={
-            options?.onMatcherChanged
-            ?? ((m) => {
+            options?.onMatcherChanged ??
+            ((m) => {
               console.log(m)
               return true
             })
           }
-          onValidate={
-            options?.onValidate
-            ?? (() => null)
-          }
+          onValidate={options?.onValidate ?? (() => null)}
           onFocus={options?.onFocus}
           onCancel={options?.onCancel}
-          onEditPrevious={options?.onEditPrevious ?? (() => console.log("prev"))}
-          onEditNext={options?.onEditNext ?? (() => console.log("prev"))}
-          onInsertMatcher={() => console.log("prev")}
+          onEditPrevious={
+            options?.onEditPrevious ?? (() => console.log('prev'))
+          }
+          onEditNext={options?.onEditNext ?? (() => console.log('prev'))}
+          onInsertMatcher={() => console.log('prev')}
           inFocus={options?.inFocus}
           first={first}
           isActive={options?.isActive}
@@ -400,7 +444,9 @@ const createMatcherEdit = (
 }
 
 const waitForOption = async (result: RenderResult, optText: string) => {
-  await waitFor(() => expect(result.getByText(optText)).toBeDefined(), { timeout: 1000 })
+  await waitFor(() => expect(result.getByText(optText)).toBeDefined(), {
+    timeout: 1000,
+  })
   const opt = result.getByText(optText)
   expect(opt.textContent).toBe(optText)
 }

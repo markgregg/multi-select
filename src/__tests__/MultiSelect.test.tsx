@@ -2,7 +2,12 @@ import MultiSelect from '../component/MultiSelect'
 import DataSource, { defaultComparison } from '../component/types/DataSource'
 import Matcher from '../component/types/Matcher'
 import { fireEvent, prettyDOM, render, waitFor } from '@testing-library/react'
-import { dualMatchers, multipleListMatchers, multipleMatchers, singleMatcher } from './testData'
+import {
+  dualMatchers,
+  multipleListMatchers,
+  multipleMatchers,
+  singleMatcher,
+} from './testData'
 
 const simpleDataSource: DataSource[] = [
   {
@@ -71,16 +76,18 @@ describe('MultiSelect', () => {
     const result = createMultiSelect(multipleMatchers)
     const element = result.container.querySelector('#MultiSelect')
     expect(element).toBeDefined()
-    element && fireEvent.keyDown(element, {
-      code: 'ArrowLeft',
-      shiftKey: true,
-    })
+    element &&
+      fireEvent.keyDown(element, {
+        code: 'ArrowLeft',
+        shiftKey: true,
+      })
     const input3 = result.container.querySelector('#test3_input')
     expect(input3).toHaveValue('& =text3')
     input3 && fireEvent.change(input3, { target: { value: '' } })
-    input3 && fireEvent.keyDown(input3, {
-      code: 'ArrowLeft',
-    })
+    input3 &&
+      fireEvent.keyDown(input3, {
+        code: 'ArrowLeft',
+      })
     const input2 = result.container.querySelector('#test2_input')
     expect(input2).toHaveValue('| =text2')
   })
@@ -89,10 +96,11 @@ describe('MultiSelect', () => {
     const result = createMultiSelect(multipleMatchers)
     const element = result.container.querySelector('#MultiSelect')
     expect(element).toBeDefined()
-    element && fireEvent.keyDown(element, {
-      code: 'ArrowLeft',
-      shiftKey: true,
-    })
+    element &&
+      fireEvent.keyDown(element, {
+        code: 'ArrowLeft',
+        shiftKey: true,
+      })
     const input3 = result.container.querySelector('#test3_input')
     expect(input3).toHaveValue('& =text3')
   })
@@ -101,15 +109,17 @@ describe('MultiSelect', () => {
     const result = createMultiSelect(multipleMatchers)
     const element = result.container.querySelector('#MultiSelect')
     expect(element).toBeDefined()
-    element && fireEvent.keyDown(element, {
-      code: 'ArrowRight',
-      shiftKey: true,
-    })
+    element &&
+      fireEvent.keyDown(element, {
+        code: 'ArrowRight',
+        shiftKey: true,
+      })
     const input = result.container.querySelector('#test_input')
     expect(input).toHaveValue('=text')
-    input && fireEvent.keyDown(input, {
-      code: 'ArrowRight',
-    })
+    input &&
+      fireEvent.keyDown(input, {
+        code: 'ArrowRight',
+      })
     const input2 = result.container.querySelector('#test2_input')
     expect(input2).toHaveValue('| =text2')
   })
@@ -118,10 +128,11 @@ describe('MultiSelect', () => {
     const result = createMultiSelect(multipleMatchers)
     const element = result.container.querySelector('#MultiSelect')
     expect(element).toBeDefined()
-    element && fireEvent.keyDown(element, {
-      code: 'ArrowRight',
-      shiftKey: true,
-    })
+    element &&
+      fireEvent.keyDown(element, {
+        code: 'ArrowRight',
+        shiftKey: true,
+      })
     const input3 = result.container.querySelector('#test_input')
     expect(input3).toHaveValue('=text')
   })
@@ -135,10 +146,11 @@ describe('MultiSelect', () => {
     const matchers = multipleMatchers
     const element = result.container.querySelector('#MultiSelect')
     expect(element).toBeDefined()
-    element && fireEvent.keyDown(element, {
-      code: 'ArrowLeft',
-      shiftKey: true,
-    })
+    element &&
+      fireEvent.keyDown(element, {
+        code: 'ArrowLeft',
+        shiftKey: true,
+      })
     expect(
       getRelativeElemntPosition(result.container, '#test3_view', '#test_view'),
     ).toBe(2)
@@ -146,10 +158,11 @@ describe('MultiSelect', () => {
       getRelativeElemntPosition(result.container, '#test3_view', '#test2_view'),
     ).toBe(2)
 
-    element && fireEvent.keyDown(element, {
-      code: 'ArrowLeft',
-      ctrlKey: true,
-    })
+    element &&
+      fireEvent.keyDown(element, {
+        code: 'ArrowLeft',
+        ctrlKey: true,
+      })
     expect(
       getRelativeElemntPosition(result.container, '#test3_view', '#test_view'),
     ).toBe(2)
@@ -172,20 +185,22 @@ describe('MultiSelect', () => {
     const matchers = multipleMatchers
     const element = result.container.querySelector('#MultiSelect')
     expect(element).toBeDefined()
-    element && fireEvent.keyDown(element, {
-      code: 'ArrowRight',
-      shiftKey: true,
-    })
+    element &&
+      fireEvent.keyDown(element, {
+        code: 'ArrowRight',
+        shiftKey: true,
+      })
     expect(
       getRelativeElemntPosition(result.container, '#test_view', '#test2_view'),
     ).toBe(4)
     expect(
       getRelativeElemntPosition(result.container, '#test_view', '#test3_view'),
     ).toBe(4)
-    element && fireEvent.keyDown(element, {
-      code: 'ArrowRight',
-      ctrlKey: true,
-    })
+    element &&
+      fireEvent.keyDown(element, {
+        code: 'ArrowRight',
+        ctrlKey: true,
+      })
     expect(
       getRelativeElemntPosition(result.container, '#test_view', '#test2_view'),
     ).toBe(2)
@@ -204,10 +219,11 @@ describe('MultiSelect', () => {
     const result = createMultiSelect(singleMatcher)
     const element = result.container.querySelector('#MultiSelect')
     expect(element).toBeDefined()
-    element && fireEvent.keyDown(element, {
-      code: 'ArrowLeft',
-      shiftKey: true,
-    })
+    element &&
+      fireEvent.keyDown(element, {
+        code: 'ArrowLeft',
+        shiftKey: true,
+      })
     const input = result.container.querySelector('#test_input')
     expect(input).toBeDefined()
     input && fireEvent.change(input, { target: { value: 'a ' } })
@@ -323,9 +339,10 @@ describe('MultiSelect', () => {
       effectAllowed: '',
     }
     expect(div).toBeDefined()
-    div && fireEvent.dragStart(div, {
-      dataTransfer,
-    })
+    div &&
+      fireEvent.dragStart(div, {
+        dataTransfer,
+      })
     expect(dragFormat).toBe('multi-select/matcher/test3')
     expect(dragData).toBe(
       '{"key":"test3","operator":"&","comparison":"=","source":"test","value":"value3","text":"text3"}',
@@ -341,9 +358,10 @@ describe('MultiSelect', () => {
       dropEffect: '',
     }
     expect(div).toBeDefined()
-    div && fireEvent.dragOver(div, {
-      dataTransfer,
-    })
+    div &&
+      fireEvent.dragOver(div, {
+        dataTransfer,
+      })
     expect(dataTransfer.dropEffect).toBe('move')
   })
 
@@ -355,18 +373,16 @@ describe('MultiSelect', () => {
       dropEffect: '',
     }
     expect(div).toBeDefined()
-    div && fireEvent.dragOver(div, {
-      dataTransfer,
-    })
+    div &&
+      fireEvent.dragOver(div, {
+        dataTransfer,
+      })
     expect(dataTransfer.dropEffect).toBe('')
   })
 
   it('drop data', async () => {
     let matchers: Matcher[] = []
-    const result = createMultiSelect(
-      multipleMatchers,
-      (m) => (matchers = m),
-    )
+    const result = createMultiSelect(multipleMatchers, (m) => (matchers = m))
     const div = result.container.querySelector('#test2_view')
     const dataTransfer = {
       types: ['multi-select/matcher/test3'],
@@ -374,9 +390,10 @@ describe('MultiSelect', () => {
         '{"key":"test3","operator":"&","comparison":"=","source":"test","value":"value3","text":"text3"}',
     }
     expect(div).toBeDefined()
-    div && fireEvent.drop(div, {
-      dataTransfer,
-    })
+    div &&
+      fireEvent.drop(div, {
+        dataTransfer,
+      })
     expect(matchers).toStrictEqual([
       multipleMatchers[0],
       multipleMatchers[2],
@@ -442,7 +459,6 @@ describe('MultiSelect', () => {
     console.log(prettyDOM(result.container))
   })
 
-
   it('test validate edit', async () => {
     let matchers: Matcher[] = []
     const result = createMultiSelect(
@@ -451,17 +467,20 @@ describe('MultiSelect', () => {
     )
     const element = result.container.querySelector('#MultiSelect')
     expect(element).toBeDefined()
-    element && fireEvent.keyDown(element, {
-      code: 'ArrowLeft',
-      shiftKey: true,
-    })
+    element &&
+      fireEvent.keyDown(element, {
+        code: 'ArrowLeft',
+        shiftKey: true,
+      })
     const input = result.container.querySelector('#test3_input')
     expect(input).toBeDefined()
     input && fireEvent.change(input, { target: { value: 'asdas' } })
     input && fireEvent.keyDown(input, { code: 'Enter' })
     const error = result.container.querySelector('#editError')
     expect(error?.textContent).toBe('Datasource (list) is limited to 2 items.')
-    expect(matchers).toStrictEqual(multipleListMatchers.filter(m => m.key !== 'test3'))
+    expect(matchers).toStrictEqual(
+      multipleListMatchers.filter((m) => m.key !== 'test3'),
+    )
   })
 })
 

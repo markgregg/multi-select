@@ -1,4 +1,9 @@
-import { closeBracket, matcherAnd, openBracket, testConfig } from '../../testData'
+import {
+  closeBracket,
+  matcherAnd,
+  openBracket,
+  testConfig,
+} from '../../testData'
 import MatcherView from '../../../component/elements/MatcherView'
 import Matcher from '../../../component/types/Matcher'
 import {
@@ -100,7 +105,7 @@ describe('MatcherView', () => {
 
   it('test simple operations', async () => {
     const result = createMatcherView(matcherAnd, false, {
-      hideOperators: true
+      hideOperators: true,
     })
     const input = result.container.querySelector('#test_label')
     expect(input?.textContent).toBe(' text')
@@ -147,28 +152,17 @@ const createMatcherView = (
           first={first}
           selected={options?.selected}
           onMatcherChanged={
-            options?.onMatcherChanged ??
-            ((m) => console.log(m))
+            options?.onMatcherChanged ?? ((m) => console.log(m))
           }
-          onValidate={
-            options?.onValidate ??
-            (() => null)
-          }
-          onDelete={
-            options?.onDelete ?? (() => console.log('delete'))
-          }
-          onSelect={
-            options?.onSelect ?? (() => console.log('select'))
-          }
-          onCancel={
-            options?.onCancel ?? (() => console.log('cancel'))
-          }
-          onEditPrevious={() => console.log("prev")}
-          onEditNext={() => console.log("prev")}
-          onInsertMatcher={() => console.log("prev")}
+          onValidate={options?.onValidate ?? (() => null)}
+          onDelete={options?.onDelete ?? (() => console.log('delete'))}
+          onSelect={options?.onSelect ?? (() => console.log('select'))}
+          onCancel={options?.onCancel ?? (() => console.log('cancel'))}
+          onEditPrevious={() => console.log('prev')}
+          onEditNext={() => console.log('prev')}
+          onInsertMatcher={() => console.log('prev')}
           onSwapMatcher={
-            options?.onSwapMatcher ??
-            ((m1, m2) => console.log(`${m1}-${m2}`))
+            options?.onSwapMatcher ?? ((m1, m2) => console.log(`${m1}-${m2}`))
           }
           onChanging={() => console.log('onChanging')}
           hideOperators={options?.hideOperators}

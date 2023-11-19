@@ -1,6 +1,12 @@
 import * as React from 'react'
-import { Theme, styleCodeFromTheme, styleFromTheme } from "@/themes"
-import { DataSource, Matcher, defaultComparison, numberComparisons, stringComparisons } from '@/component/types'
+import { Theme, styleCodeFromTheme, styleFromTheme } from '@/themes'
+import {
+  DataSource,
+  Matcher,
+  defaultComparison,
+  numberComparisons,
+  stringComparisons,
+} from '@/component/types'
 import MultiSelect from '@/component/MultiSelect'
 import './BasicExample.css'
 import Help from '../Help'
@@ -59,8 +65,8 @@ const BasicExample: React.FC<BasicExampleProps> = ({ theme }) => {
 
   return (
     <div>
-      <div className='mainMultiselectContainer'>
-        <div className='mainMultiselect'>
+      <div className="mainMultiselectContainer">
+        <div className="mainMultiselect">
           <MultiSelect
             matchers={matchers}
             dataSources={dataSource}
@@ -71,15 +77,13 @@ const BasicExample: React.FC<BasicExampleProps> = ({ theme }) => {
         </div>
         <Help theme={theme} />
       </div>
-      {
-        theme !== 'none' &&
-        <div className='styleContainer'>
-          <div className='mainStyle'>
-            <pre className='styleCode'>{styleCodeFromTheme(theme)}</pre>
+      {theme !== 'none' && (
+        <div className="styleContainer">
+          <div className="mainStyle">
+            <pre className="styleCode">{styleCodeFromTheme(theme)}</pre>
           </div>
         </div>
-      }
-
+      )}
     </div>
   )
 }

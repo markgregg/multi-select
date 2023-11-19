@@ -1,4 +1,4 @@
-import { Value } from './Matcher'
+import Matcher, { Value } from './Matcher'
 
 export type SourceItem = string | object
 
@@ -8,6 +8,7 @@ export interface DataSourceBase {
   comparisons: string[]
   precedence?: number
   selectionLimit?: number
+  functional?: boolean
 }
 
 export const defaultComparison: string[] = ['=', '!']
@@ -15,13 +16,14 @@ export const stringComparisons: string[] = ['=', '!', '*', '!*', '<*', '>*']
 export const numberComparisons: string[] = ['=', '>', '<', '>=', '<=', '!']
 
 export interface DataSourceLookup extends DataSourceBase {
-  source: SourceItem[] | ((text: string) => Promise<SourceItem[]>)
+  source:
+  | SourceItem[]
+  | ((text: string, matchers: Matcher[]) => Promise<SourceItem[]>)
   textGetter?: (item: object) => string
   valueGetter?: (item: object) => Value
   ignoreCase?: boolean
   itemLimit?: number
   searchStartLength?: number
-  showInMenuBar?: boolean
 }
 
 export interface DataSourceValue extends DataSourceBase {

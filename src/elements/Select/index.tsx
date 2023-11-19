@@ -8,12 +8,8 @@ interface SelectProps<T extends string> {
   onSelectOption: (option: T) => void
 }
 
-const Select = <T extends string,>(props: SelectProps<T>) => {
-  const {
-    options,
-    selection,
-    onSelectOption
-  } = props
+const Select = <T extends string>(props: SelectProps<T>) => {
+  const { options, selection, onSelectOption } = props
   const divRef = React.useRef<HTMLDivElement | null>(null)
   const [selected, setSelected] = React.useState<T>(selection)
   const [optionsVisible, setOptionsVisible] = React.useState<boolean>(false)
@@ -38,24 +34,18 @@ const Select = <T extends string,>(props: SelectProps<T>) => {
       ref={divRef}
     >
       {selected}
-      {
-        optionsVisible &&
-        <div className='selectMainOptionList'>
+      {optionsVisible && (
+        <div className="selectMainOptionList">
           <ul>
-            {
-              options.map(option =>
-                <li
-                  key={option}
-                  onClick={e => selectOption(e, option)}
-                >{option}</li>
-              )
-            }
+            {options.map((option) => (
+              <li key={option} onClick={(e) => selectOption(e, option)}>
+                {option}
+              </li>
+            ))}
           </ul>
         </div>
-      }
-      <div>
-
-      </div>
+      )}
+      <div></div>
     </div>
   )
 }
