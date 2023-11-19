@@ -323,8 +323,7 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         />
       </div>
       <div className="ag-theme-alpine agGrid" style={getAgGridStyle(theme)}>
-        <AgGridReact ref={agGridRef} rowData={rowData} columnDefs={columnDefs}>
-          enableAdvancedFilter={true}
+        <AgGridReact ref={agGridRef} rowData={rowData} columnDefs={columnDefs} enableAdvancedFilter={true}>
         </AgGridReact>
       </div>
     </div>
