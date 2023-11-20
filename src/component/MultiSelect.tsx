@@ -12,6 +12,7 @@ import {
   stringComparisons,
   numberComparisons,
   Selection,
+  Nemonic,
 } from './types'
 import { isUnique } from './utils'
 import {
@@ -26,7 +27,6 @@ import { checkBracket, validateMatcher } from './MultiSelectFunctions'
 import { MdClear } from 'react-icons/md'
 import useExternalClicks from './hooks/useExternalClicks/useExternalClicks'
 import './MultiSelect.css'
-import Nemonic from './types/Nemonic'
 
 interface MultiSelectProps {
   matchers?: Matcher[]
@@ -452,6 +452,7 @@ export type {
   Value,
   OperatorDisplay,
   SourceItem,
+  Nemonic,
 }
 export { defaultComparison, stringComparisons, numberComparisons, isUnique }
 export default MultiSelect

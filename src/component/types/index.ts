@@ -8,7 +8,7 @@ import DataSource, {
 import Matcher, { Value } from './Matcher'
 import MutliSelectStyles from './MutliSelectStyles'
 import Option, { FUNC_ID } from './Opton'
-import Function from './Nemonic'
+import Nemonic from './Nemonic'
 import Selection from './Selection'
 
 export type {
@@ -20,7 +20,7 @@ export type {
   Value,
   OperatorDisplay,
   SourceItem,
-  Function,
+  Nemonic,
   Selection,
 }
 
