@@ -271,7 +271,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           return
         }
         searchText = result
-        if (searchText.length > (config.searchStartLength ?? 0)) {
+        if (searchText.length >= (config.searchStartLength ?? 0)) {
           if (allowFunctions && config.functions) {
             const functions = config.functions
               .filter((func) =>
@@ -296,7 +296,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
                 selection.activeFunction.optionalDataSources?.includes(ds.name)))
             ) {
               if ('source' in ds) {
-                if (searchText.length > (ds.searchStartLength ?? 0)) {
+                if (searchText.length >= (ds.searchStartLength ?? 0)) {
                   if (typeof ds.source === 'function') {
                     ds.source(searchText, selection.matchers).then((items) => {
                       if (currentKey === key.current) {

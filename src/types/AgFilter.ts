@@ -126,7 +126,7 @@ const createCondition = (matcher: Matcher): AgSingleFilter => {
         filterType: 'date',
         dateFrom:
           typeof matcher.value === 'string'
-            ? `${matcher.value.substring(6, 10)}-${matcher.value.substring(3, 5)}-${matcher.value.substring(0, 2)}`
+            ? `${matcher.value.substring(6, 10)}-${matcher.value.substring(3, 5)}-${matcher.value.substring(0, 2)} 00:00:00`
             : matcher.value instanceof Date
               ? matcher.value
               : new Date(matcher.value),
