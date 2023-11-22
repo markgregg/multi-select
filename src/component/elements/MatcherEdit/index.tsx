@@ -134,7 +134,19 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
         (!selection.activeFunction || !selection.activeFunction.noBrackets) &&
         (symbol === '(' || symbol === ')')
       ) {
-        selectOption(symbol)
+        if (matcher && onInsertMatcher && matcher.operator !== symbol) {
+          const newMatcher: Matcher = {
+            key: guid(),
+            operator: symbol,
+            comparison: symbol,
+            source: '',
+            value: '',
+            text: '',
+          }
+          onInsertMatcher(newMatcher)
+        } else {
+          selectOption(symbol)
+        }
         return null
       }
 
@@ -431,24 +443,32 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           event.stopPropagation()
           break
         case 'PageUp':
-          setActiveOption(getCategoryIndex(activeOption ?? 0, false))
-          event.preventDefault()
-          event.stopPropagation()
+          if (totalOptions > 0) {
+            setActiveOption(getCategoryIndex(activeOption ?? 0, false))
+            event.preventDefault()
+            event.stopPropagation()
+          }
           break
         case 'PageDown':
-          setActiveOption(getCategoryIndex(activeOption ?? totalOptions - 1))
-          event.preventDefault()
-          event.stopPropagation()
+          if (totalOptions > 0) {
+            setActiveOption(getCategoryIndex(activeOption ?? totalOptions - 1))
+            event.preventDefault()
+            event.stopPropagation()
+          }
           break
         case 'Home':
-          setActiveOption(0)
-          event.preventDefault()
-          event.stopPropagation()
+          if (totalOptions > 0) {
+            setActiveOption(0)
+            event.preventDefault()
+            event.stopPropagation()
+          }
           break
         case 'End':
-          setActiveOption(totalOptions - 1)
-          event.preventDefault()
-          event.stopPropagation()
+          if (totalOptions > 0) {
+            setActiveOption(totalOptions - 1)
+            event.preventDefault()
+            event.stopPropagation()
+          }
           break
         case 'Enter':
         case 'Tab':

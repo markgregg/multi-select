@@ -352,6 +352,21 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         }
         event.preventDefault()
         break
+      case 'Home':
+        if (currentMatchers.length > 0) {
+          setActiveMatcher(0)
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        break
+      case 'End':
+        if (currentMatchers.length > 0) {
+          setActiveMatcher(null)
+          inputRef.current?.focus()
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        break
     }
   }
 
