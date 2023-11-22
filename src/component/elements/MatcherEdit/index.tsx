@@ -32,7 +32,6 @@ interface MatcherEditProps {
   inFocus?: boolean
   first: boolean
   allowFunctions?: boolean
-  isActive?: boolean
   styles?: MutliSelectStyles
 }
 
@@ -52,7 +51,6 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       inFocus,
       first,
       allowFunctions,
-      isActive,
       styles,
       onChanging,
       onSetActiveFunction,
@@ -84,10 +82,8 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const selection = React.useContext<Selection>(selectionContext)
 
     React.useEffect(() => {
-      if (isActive) {
-        inputRef.current?.focus()
-      }
-    }, [isActive])
+      inputRef.current?.focus()
+    }, [])
 
     React.useEffect(() => {
       setError(null)
@@ -100,27 +96,27 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       setActiveOption(null)
     }
 
-    const checkForOperator = (searchText: string): string => {
+    const checkForOperator = (searchText: string): [string, 'or' | 'and' | null] => {
       if (searchText.length > 2) {
         const symbol = searchText.substring(0, 3)
         if (symbol === 'and') {
           setOperator(config.and)
-          return searchText.substring(3).trim()
+          return [searchText.substring(3).trim(), 'and']
         }
       }
       if (searchText.length > 1) {
         const symbol = searchText.substring(0, 2)
         if (symbol === 'or') {
           setOperator(config.or)
-          return searchText.substring(2).trim()
+          return [searchText.substring(2).trim(), 'or']
         }
       }
       const symbol = searchText[0]
       if (symbol === config.and || symbol === config.or) {
         setOperator(symbol)
-        return searchText.substring(1).trim()
+        return [searchText.substring(1).trim(), symbol === config.and ? 'and' : 'or']
       }
-      return searchText
+      return [searchText, null]
     }
 
     const checkForComparison = (searchText: string): string | null => {
@@ -258,13 +254,14 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
         setNotifiedChaning(true)
       }
       let totalCount = 0
+      let op: 'or' | 'and' | null = null
       if (newText.length > 0) {
         let searchText = newText.trim()
         if (
           !config.simpleOperation &&
           (!selection.activeFunction || !selection.activeFunction.noAndOr)
         ) {
-          searchText = checkForOperator(searchText)
+          [searchText, op] = checkForOperator(searchText)
         }
         const result = checkForComparison(searchText)
         if (result === null) {
@@ -298,7 +295,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
               if ('source' in ds) {
                 if (searchText.length >= (ds.searchStartLength ?? 0)) {
                   if (typeof ds.source === 'function') {
-                    ds.source(searchText, selection.matchers).then((items) => {
+                    ds.source(searchText, op, selection.matchers).then((items) => {
                       if (currentKey === key.current) {
                         totalCount += updateOptions(items, ds, allOptions)
                         updateState(allOptions, totalCount)

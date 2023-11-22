@@ -18,7 +18,7 @@ export const numberComparisons: string[] = ['=', '>', '<', '>=', '<=', '!']
 export interface DataSourceLookup extends DataSourceBase {
   source:
   | SourceItem[]
-  | ((text: string, matchers: Matcher[]) => Promise<SourceItem[]>)
+  | ((text: string, op: 'or' | 'and' | null, matchers: Matcher[]) => Promise<SourceItem[]>)
   textGetter?: (item: object) => string
   valueGetter?: (item: object) => Value
   ignoreCase?: boolean

@@ -166,7 +166,6 @@ const MatcherView: React.FC<MatcherViewProps> = ({
           inFocus={true}
           first={first ?? false}
           styles={styles}
-          isActive={selected}
           onEditNext={onEditNext}
           onEditPrevious={editPrevious}
           onChanging={onChanging}

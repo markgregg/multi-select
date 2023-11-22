@@ -93,7 +93,7 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
   const [filterSources, setFilterSources] = React.useState<string[]>([])
 
   const findItems = React.useCallback(
-    (text: string, field: 'isin' | 'currency' | 'issuer'): SourceItem[] => {
+    (text: string, field: 'isin' | 'currency' | 'issuer', isOr: boolean): SourceItem[] => {
       const uniqueItems = new Set<string>()
       const callback = (row: IRowNode<Bond>) => {
         if (row.data) {
@@ -103,7 +103,11 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
           }
         }
       }
-      agGridRef.current?.api?.forEachNodeAfterFilter(callback)
+      if (isOr) {
+        agGridRef.current?.api?.forEachNode(callback)
+      } else {
+        agGridRef.current?.api?.forEachNodeAfterFilter(callback)
+      }
       let items = [...uniqueItems].sort()
       if (items.length > 10) {
         items = items?.slice(10)
@@ -133,9 +137,9 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         ignoreCase: true,
         searchStartLength: 1,
         selectionLimit: 2,
-        source: async (text) =>
+        source: async (text, op) =>
           new Promise((resolve) => {
-            setTimeout(() => resolve(findItems(text, 'isin')), 5)
+            setTimeout(() => resolve(findItems(text, 'isin', op === 'or')), 5)
           }),
       },
       {
@@ -145,9 +149,9 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         precedence: 2,
         ignoreCase: true,
         selectionLimit: 2,
-        source: async (text) =>
+        source: async (text, op) =>
           new Promise((resolve) => {
-            setTimeout(() => resolve(findItems(text, 'currency')), 5)
+            setTimeout(() => resolve(findItems(text, 'currency', op === 'or')), 5)
           }),
         showInMenuBar: true,
       },
@@ -215,9 +219,9 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         ignoreCase: false,
         searchStartLength: 3,
         selectionLimit: 2,
-        source: async (text) =>
+        source: async (text, op) =>
           new Promise((resolve) => {
-            setTimeout(() => resolve(findItems(text, 'issuer')), 5)
+            setTimeout(() => resolve(findItems(text, 'issuer', op === 'or')), 5)
           }),
       },
       {
@@ -247,9 +251,9 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         searchStartLength: 3,
         selectionLimit: 2,
         functional: true,
-        source: async (text) =>
+        source: async (text, op) =>
           new Promise((resolve) => {
-            setTimeout(() => resolve(findItems(text, 'issuer')), 5)
+            setTimeout(() => resolve(findItems(text, 'issuer', op === 'or')), 5)
           }),
       },
     ],

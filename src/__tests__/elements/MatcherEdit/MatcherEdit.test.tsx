@@ -436,7 +436,6 @@ const createMatcherEdit = (
           onInsertMatcher={() => console.log('prev')}
           inFocus={options?.inFocus}
           first={first}
-          isActive={options?.isActive}
         />
       </configContext.Provider>
     </hasFocusContext.Provider>,

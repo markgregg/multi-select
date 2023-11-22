@@ -423,7 +423,6 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 inFocus={activeMatcher === null}
                 first={currentMatchers.length === 0}
                 allowFunctions={currentMatchers.length === 0 && activeFunction === null}
-                isActive={true}
                 onEditPrevious={editLast}
                 onEditNext={editNext}
                 onInsertMatcher={(newMatcher) =>
