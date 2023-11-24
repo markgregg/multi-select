@@ -2,8 +2,8 @@ import * as React from 'react'
 import { Matcher, MutliSelectStyles } from '../../types'
 import MatcherEdit from '../MatcherEdit'
 import { TiMinus } from 'react-icons/ti'
-import './MatcherView.css'
 import Nemonic from '@/component/types/Nemonic'
+import './MatcherView.css'
 
 const multiSelectPrefix = 'multi-select/matcher/'
 

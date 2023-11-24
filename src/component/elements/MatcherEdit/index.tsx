@@ -9,10 +9,10 @@ import { guid } from '../../utils'
 import OptionList from '../OptionList'
 import MutliSelectStyles from '../../types/MutliSelectStyles'
 import ErrorMessage from '../ErrorMessage'
-import './MatcherEdit.css'
 import Nemonic from '@/component/types/Nemonic'
 import { FUNC_ID } from '@/component/types/Opton'
-import { FUNCTIONS_TEXT, insertOptions, matchItems, updateOptions } from './MatcherEditFunctions'
+import { FUNCTIONS_TEXT, getCategoryIndex, insertOptions, matchItems, updateOptions } from './MatcherEditFunctions'
+import './MatcherEdit.css'
 
 interface MatcherEditProps {
   matcher?: Matcher
@@ -263,34 +263,6 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       }
     }
 
-    const getPosition = (index: number) => {
-      return index === 0
-        ? 0
-        : options
-          .slice(0, index)
-          .map((entry) => entry[1].length)
-          .reduce((prev, curr) => prev + curr)
-    }
-
-    const getCategoryIndex = (currentIndex: number, forward = true) => {
-      let count = 0
-      const index = options.findIndex((entry) => {
-        const [, opts] = entry
-        const outcome =
-          currentIndex >= count && currentIndex < count + opts.length
-        count += opts.length
-        return outcome
-      })
-      return getPosition(
-        forward
-          ? index < options.length - 1
-            ? index + 1
-            : 0
-          : index > 0
-            ? index - 1
-            : options.length - 1,
-      )
-    }
 
     const keyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
       setError(null)
@@ -349,14 +321,14 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           break
         case 'PageUp':
           if (totalOptions > 0) {
-            setActiveOption(getCategoryIndex(activeOption ?? 0, false))
+            setActiveOption(getCategoryIndex(activeOption ?? 0, options, false))
             event.preventDefault()
             event.stopPropagation()
           }
           break
         case 'PageDown':
           if (totalOptions > 0) {
-            setActiveOption(getCategoryIndex(activeOption ?? totalOptions - 1))
+            setActiveOption(getCategoryIndex(activeOption ?? totalOptions - 1, options))
             event.preventDefault()
             event.stopPropagation()
           }
