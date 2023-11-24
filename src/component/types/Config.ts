@@ -11,7 +11,7 @@ export default interface Config {
   or: string
   comparisons: string[]
   defaultItemLimit: number
-  simpleOperation: boolean
+  operators: 'Simple' | 'AgGrid' | 'Complex'
   operatorDisplay?: OperatorDisplay
   maxDropDownHeight?: number
   minDropDownWidth?: number

@@ -37,9 +37,24 @@ export const validateMatcher = (
   matchers: Matcher[],
   dataSources: DataSource[],
   matcher: Matcher,
+  activeMatcher: number | null,
+  operators: 'Simple' | 'AgGrid' | 'Complex',
+  orSymnbol: string
 ): string | null => {
   if (matcher.comparison === '(' || matcher.comparison === ')') {
     return null
+  }
+  if (operators === 'AgGrid' && (matcher.operator === 'or' || matcher.operator === orSymnbol)) {
+    const previousOp = activeMatcher
+      ? activeMatcher > 0
+        ? matchers[activeMatcher - 1]
+        : null
+      : matchers.length > 0
+        ? matchers[matchers.length - 1]
+        : null
+    if (previousOp && previousOp.source !== matcher.source) {
+      return `When using AgGrid style operators, or can only be used for the same field`
+    }
   }
   const dataSource = dataSources.find((ds) => ds.name === matcher.source)
   if (dataSource?.selectionLimit) {

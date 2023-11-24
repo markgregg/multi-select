@@ -11,7 +11,7 @@ const configContext = React.createContext<Config>({
   and: '&',
   or: '|',
   comparisons: [],
-  simpleOperation: false,
+  operators: 'Complex',
   defaultItemLimit: ITEM_LIMIT,
 })
 const selectionContext = React.createContext<Selection>({

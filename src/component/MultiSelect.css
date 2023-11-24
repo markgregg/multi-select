@@ -18,3 +18,7 @@
 .multiSelectClearIcon:hover {
   color: var(--multiSelectClearIconHoverColor, gray);
 }
+
+.multiSelectSearchIcon {
+  align-self: center;
+}

@@ -8,7 +8,7 @@ import {
   numberComparisons,
   stringComparisons,
 } from '@/component/types'
-import MultiSelect, { isUnique } from '@/component/MultiSelect'
+import MultiSelect from '@/component/MultiSelect'
 import { AgGridReact } from 'ag-grid-react'
 import { fetchBondsAndCache } from '@/services/bondsService'
 import Bond from '@/types/Bond'
@@ -288,10 +288,10 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
   }
 
   const matchersChanged = (newMatchers: Matcher[]) => {
-    const sources = newMatchers.map((m) => m.source).filter(isUnique)
+    const sources = newMatchers.filter(m => !m.changing).map((m) => m.source)
     sources.forEach((source) => {
       const column = getColumn(source)
-      const values = newMatchers.filter((m) => m.source === source)
+      const values = newMatchers.filter((m) => m.source === source && !m.changing)
       const filter = createFilter(values)
       const instance = agGridRef.current?.api?.getFilterInstance(column)
       if (instance) {
@@ -324,6 +324,7 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
           styles={styleFromTheme(theme)}
           maxDropDownHeight={120}
           showCategories={true}
+          operators="AgGrid"
         />
       </div>
       <div className="ag-theme-alpine agGrid" style={getAgGridStyle(theme)}>

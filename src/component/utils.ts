@@ -1,5 +1,3 @@
-import { Option, SourceItem } from './types'
-import { DataSourceLookup } from './types/DataSource'
 
 export const guid = (): string => {
   const gen = (n?: number): string => {
@@ -28,21 +26,4 @@ export const isUnique = (
   return array.indexOf(value) === index
 }
 
-export const mapOptions = (
-  items: SourceItem[],
-  ds: DataSourceLookup,
-): Option[] => {
-  return items.map((item) => {
-    return {
-      source: ds.name,
-      value:
-        ds.valueGetter && typeof item === 'object'
-          ? ds.valueGetter(item)
-          : item.toString(),
-      text:
-        ds.textGetter && typeof item === 'object'
-          ? ds.textGetter(item)
-          : item.toString(),
-    }
-  })
-}
+

@@ -7,4 +7,5 @@ export default interface Matcher {
   source: string
   value: Value
   text: string
+  changing?: boolean
 }

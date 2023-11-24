@@ -84,7 +84,7 @@ const testConfig: Config = {
   and: '&',
   or: '|',
   comparisons: ['=', '!', '*', '!*', '<*', '>*', '>', '<', '>=', '<=', '!'],
-  simpleOperation: false,
+  operators: 'Complex',
   defaultItemLimit: 10,
 }
 

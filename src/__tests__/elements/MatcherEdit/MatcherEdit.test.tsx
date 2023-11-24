@@ -302,7 +302,7 @@ describe('MatcherEdit', () => {
           '<=',
           '!',
         ],
-        simpleOperation: true,
+        operators: 'Simple',
         defaultItemLimit: 10,
       },
     })
@@ -331,7 +331,7 @@ describe('MatcherEdit', () => {
           '<=',
           '!',
         ],
-        simpleOperation: true,
+        operators: 'Simple',
         defaultItemLimit: 10,
       },
     })
@@ -360,7 +360,7 @@ describe('MatcherEdit', () => {
           '<=',
           '!',
         ],
-        simpleOperation: true,
+        operators: 'Simple',
         defaultItemLimit: 10,
       },
     })

@@ -25,6 +25,7 @@ import MatcherView from './elements/MatcherView'
 import MatcherEdit from './elements/MatcherEdit'
 import { checkBracket, validateMatcher } from './MultiSelectFunctions'
 import { MdClear } from 'react-icons/md'
+import { IoIosSearch } from "react-icons/io";
 import useExternalClicks from './hooks/useExternalClicks/useExternalClicks'
 import './MultiSelect.css'
 
@@ -36,7 +37,7 @@ interface MultiSelectProps {
   and?: string
   or?: string
   defaultItemLimit?: number
-  simpleOperation?: boolean
+  operators?: 'Simple' | 'AgGrid' | 'Complex'
   onMatchersChanged?: (matchers: Matcher[]) => void
   onComplete?: (matchers: Matcher[], func?: string) => void
   onCompleteError?: (func: string, missingFields: string[]) => void
@@ -46,6 +47,7 @@ interface MultiSelectProps {
   searchStartLength?: number
   showCategories?: boolean
   hideToolTip?: boolean
+  maxHistory?: number
   styles?: MutliSelectStyles
 }
 
@@ -61,7 +63,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   dataSources,
   functions,
   defaultItemLimit,
-  simpleOperation,
+  operators,
   onMatchersChanged,
   onComplete,
   onCompleteError,
@@ -97,7 +99,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       or: or ?? '|',
       comparisons: comparisonsFromDataSources(dataSources),
       defaultItemLimit: defaultItemLimit ?? ITEM_LIMIT,
-      simpleOperation: simpleOperation ?? false,
+      operators: operators ?? 'Complex',
       maxDropDownHeight,
       minDropDownWidth,
       searchStartLength,
@@ -109,7 +111,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     and,
     or,
     defaultItemLimit,
-    simpleOperation,
+    operators,
     maxDropDownHeight,
     minDropDownWidth,
     searchStartLength,
@@ -264,7 +266,14 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
   const matcherChanging = (matcher: Matcher) => {
     setInEdit(true)
-    notifyMatchersChanged(currentMatchers.filter((m) => matcher.key !== m.key))
+    notifyMatchersChanged(currentMatchers.map(m => {
+      return m.key === matcher.key
+        ? {
+          ...matcher,
+          changing: true
+        }
+        : m
+    }))
   }
 
   const insertMatcher = (
@@ -404,7 +413,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 matcher={matcher}
                 onMatcherChanged={updateMatcher}
                 onValidate={(m) =>
-                  validateMatcher(currentMatchers, dataSources, m)
+                  validateMatcher(currentMatchers, dataSources, m, activeMatcher, config.operators, config.or)
                 }
                 onDelete={() => deleteMatcher(matcher, true)}
                 onSelect={() => selectMatcher(index)}
@@ -420,7 +429,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 first={
                   index === 0 || currentMatchers[index - 1].comparison === '('
                 }
-                hideOperators={simpleOperation}
+                hideOperators={operators === 'Simple'}
                 showWarning={mismatchedBrackets.includes(index)}
                 showCategory={showCategories}
                 hideToolTip={hideToolTip}
@@ -432,7 +441,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 ref={inputRef}
                 onMatcherChanged={addMatcher}
                 onValidate={(m) =>
-                  validateMatcher(currentMatchers, dataSources, m)
+                  validateMatcher(currentMatchers, dataSources, m, activeMatcher, config.operators, config.or)
                 }
                 onFocus={editFocus}
                 inFocus={activeMatcher === null}
@@ -450,6 +459,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 styles={styles}
               />
             }
+            <IoIosSearch className="multiSelectSearchIcon" />
           </div>
         </selectionContext.Provider>
       </configContext.Provider>
