@@ -5,8 +5,8 @@ import { Theme, bodyStyleFromTheme, themes } from './themes'
 import BasicExample from './elements/BasicExample'
 import AgGridExample from './elements/AgGridExample'
 
-type Example = 'basic' | 'ag-grid'
-const examples: Example[] = ['basic', 'ag-grid']
+type Example = 'command' | 'ag-grid'
+const examples: Example[] = ['command', 'ag-grid']
 
 const App = () => {
   const [theme, setTheme] = React.useState<Theme>(themes[0])
@@ -27,7 +27,7 @@ const App = () => {
           onSelectOption={setExample}
         />
       </div>
-      {example === 'basic' ? (
+      {example === 'command' ? (
         <BasicExample theme={theme} />
       ) : (
         <AgGridExample theme={theme} />

@@ -1,3 +1,5 @@
+import { Matcher } from "."
+
 export type FreTextFunc = 'Original' | 'Individual' | 'Combined'
 
 export default interface Nemonic {
@@ -8,4 +10,5 @@ export default interface Nemonic {
   noBrackets?: boolean
   allowFreeText?: boolean
   pasteFreeTextAction?: FreTextFunc
+  validate?: (matchers: Matcher[]) => string | null
 }

@@ -1,4 +1,5 @@
-import { DataSource, FreTextFunc, Matcher, Nemonic, Option, SourceItem } from './types'
+import { config } from 'process'
+import { Config, DataSource, FreTextFunc, Matcher, Nemonic, Option, SourceItem } from './types'
 import { DataSourceLookup, DataSourceValue } from './types/DataSource'
 import { guid } from './utils'
 
@@ -77,6 +78,7 @@ export const parseText = (
   text: string,
   dataSources: DataSource[],
   func: Nemonic | null,
+  config: Config,
   pasteFreeTextAction: FreTextFunc = 'Individual',
   pasteMatchTimeout = 500,
 ): Promise<Matcher[]> => {
@@ -85,14 +87,18 @@ export const parseText = (
     const parts = text.includes('"') ? protectSpacesAndSplit(text) : text.split(' ')
     const elements: (Matcher | string)[] = parts
     const promises: Promise<boolean>[] = []
-    /* for operands and comparisons 
-     check trimmed part and if it is match of op or comp, then set op and comp
-     set default op and comp here
-    */
+    let op = 'and'
+    let comp = '='
     parts.forEach((part, index) => {
       /* if part not op or comp reset to defaults */
       const trimmedPart = part.trim()
-      if (trimmedPart !== '') {
+      if (trimmedPart === config.and || trimmedPart === 'and') {
+        op = 'and'
+      } else if (trimmedPart === config.or || trimmedPart === 'or') {
+        op = 'or'
+      } else if (config.comparisons.includes(trimmedPart)) {
+        comp = trimmedPart
+      } else if (trimmedPart !== '') {
         dataSources.forEach((ds) => {
           if (
             (func &&
@@ -116,14 +122,16 @@ export const parseText = (
                         index,
                         promises,
                         elements,
+                        op,
+                        comp
                       )
                     }
                   } else {
-                    matchLists(ds, d, d.source, trimmedPart, index, elements)
+                    matchLists(ds, d, d.source, trimmedPart, index, elements, op, comp)
                   }
                 }
               } else {
-                matchExpressions(ds, d, trimmedPart, index, elements)
+                matchExpressions(ds, d, trimmedPart, index, elements, op, comp)
               }
             })
           }
@@ -132,6 +140,7 @@ export const parseText = (
     })
 
     const resolution = () => {
+
       resolve(freeTextFunc === 'Original'
         ? [
           {
@@ -146,10 +155,10 @@ export const parseText = (
         ]
         : freeTextFunc === 'Combined'
           ? [
-            joinText(elements),
+            joinText(elements, config),
             ...(elements.filter(e => typeof e !== 'string') as Matcher[])
           ]
-          : elements.map((element) => {
+          : elements.filter(e => typeof e !== 'string' || notCompAndOp(e, config)).map((element) => {
             return typeof element === 'string'
               ? {
                 key: guid(),
@@ -185,6 +194,8 @@ const matchExpressions = (
   trimmedPart: string,
   index: number,
   elements: (Matcher | string)[],
+  operator: string,
+  comparison: string
 ) => {
   if (
     d.matchOnPaste &&
@@ -195,8 +206,8 @@ const matchExpressions = (
     if (value) {
       elements[index] = elements[index] = {
         key: guid(),
-        operator: 'and',
-        comparison: '=',
+        operator,
+        comparison,
         source: ds.name,
         value,
         text: typeof value === 'string' ? value : value.toString(),
@@ -212,6 +223,8 @@ const matchLists = (
   trimmedPart: string,
   index: number,
   elements: (Matcher | string)[],
+  operator: string,
+  comparison: string
 ) => {
   if (d.matchOnPaste) {
     const found = list.find((item) => {
@@ -228,8 +241,8 @@ const matchLists = (
       if (option) {
         elements[index] = {
           key: guid(),
-          operator: 'and',
-          comparison: '=',
+          operator,
+          comparison,
           ...option,
         }
       }
@@ -245,6 +258,8 @@ const matchPromises = (
   index: number,
   promises: Promise<boolean>[],
   elements: (Matcher | string)[],
+  operator: string,
+  comparison: string
 ) => {
   promises.push(
     matchOnPaste(trimmedPart).then((v) => {
@@ -253,8 +268,8 @@ const matchPromises = (
         if (option) {
           elements[index] = {
             key: guid(),
-            operator: 'and',
-            comparison: '=',
+            operator,
+            comparison,
             ...option,
           }
         }
@@ -264,8 +279,10 @@ const matchPromises = (
   )
 }
 
-const joinText = (elements: (Matcher | string)[]): Matcher => {
-  const text = elements.filter(e => typeof e === 'string').join(' ')
+const notCompAndOp = (e: string, config: Config): boolean => e !== 'and' && e !== 'or' && e !== config.and && e !== config.or && !config.comparisons.includes(e)
+
+const joinText = (elements: (Matcher | string)[], config: Config): Matcher => {
+  const text = elements.filter(e => typeof e === 'string' && notCompAndOp(e, config)).join(' ')
   return {
     key: guid(),
     operator: '',

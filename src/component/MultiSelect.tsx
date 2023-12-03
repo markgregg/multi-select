@@ -45,7 +45,7 @@ interface MultiSelectProps {
   operators?: 'Simple' | 'AgGrid' | 'Complex'
   onMatchersChanged?: (matchers: Matcher[]) => void
   onComplete?: (matchers: Matcher[], func?: string) => void
-  onCompleteError?: (func: string, missingFields: string[]) => void
+  onCompleteError?: (func: string, errorMessage: string, missingFields?: string[]) => void
   clearIcon?: React.ReactElement
   maxDropDownHeight?: number
   minDropDownWidth?: number
@@ -168,7 +168,16 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       )
       if (missing.length > 0) {
         if (onCompleteError) {
-          onCompleteError(activeFunction.name, missing)
+          onCompleteError(activeFunction.name, `mandatory fields are missing (${missing.join('',)})`, missing)
+        }
+        return false
+      }
+    }
+    if (activeFunction?.validate) {
+      const error = activeFunction.validate(currentMatchers)
+      if (error) {
+        if (onCompleteError) {
+          onCompleteError(activeFunction.name, error)
         }
         return false
       }
@@ -396,7 +405,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
     const text = event.clipboardData?.getData('text')
     if (text) {
-      parseText(text, dataSources, activeFunction, pasteFreeTextAction, pasteMatchTimeout).then(m =>
+      parseText(text, dataSources, activeFunction, config, pasteFreeTextAction, pasteMatchTimeout).then(m =>
         updatedMatchers([...currentMatchers, ...m])
       )
     }
@@ -405,9 +414,10 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   }
 
   const handleCopy = (event: React.ClipboardEvent<HTMLDivElement>) => {
+    const matcherText = (m: Matcher) => `${m.operator !== 'and' && m.operator !== config.and ? `${m.comparison} ` : ''}${m.comparison !== '=' ? `${m.comparison} ` : ''}${m.text.includes(' ') ? `"${m.text}"` : m.text}`
     const text = activeFunction
-      ? `${activeFunction.name} ${currentMatchers.map(m => m.text.includes(' ') ? `"${m.text}"` : m.text).join(' ')}`
-      : currentMatchers.map(m => m.text).join(' ')
+      ? `${activeFunction.name} ${currentMatchers.map(matcherText).join(' ')}`
+      : currentMatchers.map(matcherText).join(' ')
     event.clipboardData?.setData('text', text)
     event.stopPropagation()
     event.preventDefault()

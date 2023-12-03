@@ -17,7 +17,6 @@ import { createFilter } from '@/types/AgFilter'
 import './AgGridExample.css'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
-import Nemonic from '@/component/types/Nemonic'
 
 interface AgGridExampleProps {
   theme: Theme
@@ -310,7 +309,7 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         ],
       }
     ],
-    [findItems],
+    [findItems, findItem],
   )
 
   const getColumn = (source: string): string => {

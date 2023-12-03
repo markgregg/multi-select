@@ -11,7 +11,7 @@ export const metallicTheme: MutliSelectStyles = {
     borderLeft: 'white 1px solid',
     background: 'linear-gradient(to left top, #00468C, #C3CDE6)',
     color: 'white',
-    minHeight: '37.5px'
+    minHeight: '31.5px'
   },
   input: {
     backgroundColor: 'transparent',
@@ -68,7 +68,7 @@ export const styleFromTheme = (
   }
   return {
     mutliSelect: {
-      minHeight: '37.5px'
+      minHeight: '31.5px'
     }
   }
 }
