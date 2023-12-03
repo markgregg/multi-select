@@ -1,4 +1,3 @@
-
 export default interface Interest {
   client: string
   side: 'BUY' | 'SELL'

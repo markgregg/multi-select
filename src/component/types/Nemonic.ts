@@ -1,4 +1,4 @@
-import { Matcher } from "."
+import { Matcher } from '.'
 
 export type FreTextFunc = 'Original' | 'Individual' | 'Combined'
 

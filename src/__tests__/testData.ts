@@ -40,41 +40,57 @@ const testDataSources: DataSource[] = [
     comparisons: defaultComparison,
     precedence: 2,
     selectionLimit: 2,
-    source: ['asdas', 'assda', 'loadsp'],
+    definitions: [
+      {
+        source: ['asdas', 'assda', 'loadsp'],
+      }
+    ]
   },
   {
     name: 'promise',
     title: 'Promise list',
     comparisons: defaultComparison,
     precedence: 1,
-    source: async (text) => {
-      return new Promise((resolve) => {
-        setTimeout(
-          () =>
-            resolve(
-              ['delayed', 'aploked', 'loadxx'].filter((item) =>
-                item.includes(text),
-              ),
-            ),
-          250,
-        )
-      })
-    },
+    definitions: [
+      {
+        source: async (text) => {
+          return new Promise((resolve) => {
+            setTimeout(
+              () =>
+                resolve(
+                  ['delayed', 'aploked', 'loadxx'].filter((item) =>
+                    item.includes(text),
+                  ),
+                ),
+              250,
+            )
+          })
+        },
+      }
+    ]
   },
   {
     name: 'function',
     title: 'Functions',
     comparisons: numberComparisons,
-    match: (text: string) => !isNaN(Number(text)),
-    value: (text: string) => Number.parseInt(text),
+    definitions: [
+      {
+        match: (text: string) => !isNaN(Number(text)),
+        value: (text: string) => Number.parseInt(text),
+      }
+    ]
   },
   {
     name: 'regex',
     title: 'Regular Expression',
     comparisons: stringComparisons,
     precedence: 3,
-    match: /^[a-zA-Z]{2,}$/,
-    value: (text: string) => text,
+    definitions: [
+      {
+        match: /^[a-zA-Z]{2,}$/,
+        value: (text: string) => text,
+      }
+    ]
   },
 ]
 

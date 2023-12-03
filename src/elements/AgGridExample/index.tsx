@@ -120,10 +120,7 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
     [],
   )
   const findItem = React.useCallback(
-    (
-      text: string,
-      field: 'isin' | 'currency' | 'issuer'
-    ): SourceItem[] => {
+    (text: string, field: 'isin' | 'currency' | 'issuer'): SourceItem[] => {
       let found: any | null = null
       const callback = (row: IRowNode<Bond>) => {
         if (row.data) {
@@ -202,7 +199,7 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
           {
             match: (text: string) => !isNaN(Number(text)),
             value: (text: string) => Number.parseFloat(text),
-            matchOnPaste: true
+            matchOnPaste: true,
           },
         ],
       },
@@ -216,7 +213,7 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
           {
             match: (text: string) => !isNaN(Number(text)),
             value: (text: string) => Number.parseInt(text),
-            matchOnPaste: true
+            matchOnPaste: true,
           },
         ],
       },
@@ -231,7 +228,7 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
             ignoreCase: true,
             searchStartLength: 2,
             source: ['BUY', 'SELL'],
-            matchOnPaste: true
+            matchOnPaste: true,
           },
         ],
       },
@@ -245,7 +242,7 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
           {
             match: (text: string) => !isNaN(Number(text)),
             value: (text: string) => Number.parseFloat(text),
-            matchOnPaste: false
+            matchOnPaste: false,
           },
         ],
       },
@@ -277,7 +274,7 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
                   resolve(findItem(text, 'issuer'))
                 }, 5)
               }),
-          }
+          },
         ],
       },
       {
@@ -290,7 +287,7 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
           {
             match: /^[0-9]{0,2}[yYmM]$/,
             value: (text: string) => extractDate(text),
-            matchOnPaste: true
+            matchOnPaste: true,
           },
         ],
       },
@@ -304,10 +301,10 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
           {
             match: /^[0-9]{0,2}[yYmM]$/,
             value: (text: string) => extractDate(text),
-            matchOnPaste: true
+            matchOnPaste: true,
           },
         ],
-      }
+      },
     ],
     [findItems, findItem],
   )

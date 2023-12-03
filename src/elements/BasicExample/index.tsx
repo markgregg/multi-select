@@ -1,5 +1,10 @@
 import * as React from 'react'
-import { Theme, getAgGridStyle, styleCodeFromTheme, styleFromTheme } from '@/themes'
+import {
+  Theme,
+  getAgGridStyle,
+  styleCodeFromTheme,
+  styleFromTheme,
+} from '@/themes'
 import {
   DataSource,
   Matcher,
@@ -134,56 +139,56 @@ const BasicExample: React.FC<BasicExampleProps> = ({ theme }) => {
       filter: false,
       sortable: true,
       resizable: false,
-      width: 220
+      width: 220,
     },
     {
       field: 'side',
       filter: false,
       sortable: true,
       resizable: false,
-      width: 70
+      width: 70,
     },
     {
       field: 'sector',
       filter: false,
       sortable: true,
       resizable: false,
-      width: 120
+      width: 120,
     },
     {
       field: 'isin',
       filter: false,
       sortable: true,
       resizable: true,
-      width: 80
+      width: 80,
     },
     {
       field: 'maturityDateFrom',
       filter: false,
       sortable: true,
       resizable: true,
-      width: 160
+      width: 160,
     },
     {
       field: 'maturityDateTo',
       filter: false,
       sortable: true,
       resizable: true,
-      width: 160
+      width: 160,
     },
     {
       field: 'couponFrom',
       filter: false,
       sortable: true,
       resizable: true,
-      width: 120
+      width: 120,
     },
     {
       field: 'couponTo',
       filter: false,
       sortable: true,
       resizable: true,
-      width: 120
+      width: 120,
     },
   ])
 
@@ -419,7 +424,7 @@ const BasicExample: React.FC<BasicExampleProps> = ({ theme }) => {
                   resolve(findItem(text, 'issuer'))
                 }, 5)
               }),
-          }
+          },
         ],
       },
       {
@@ -520,15 +525,41 @@ const BasicExample: React.FC<BasicExampleProps> = ({ theme }) => {
 
   const handleAction = (matchers: Matcher[], func?: string) => {
     if (func) {
-      const client = matchers.find(matcher => matcher.source.toLowerCase() === 'client')?.text
-      const side = matchers.find(matcher => matcher.source.toLowerCase() === 'side')?.text as 'BUY' | 'SELL'
-      const size = matchers.find(matcher => matcher.source.toLowerCase() === 'size')?.value as number
-      const sector = matchers.find(matcher => matcher.source.toLowerCase() === 'sector')?.text
-      const isin = matchers.find(matcher => matcher.source.toLowerCase() === 'isin2')?.text
-      const maturityDateFrom = matchers.find(matcher => matcher.source.toLowerCase() === 'maturitydate' && matcher.comparison === '>')?.text
-      const maturityDateTo = matchers.find(matcher => matcher.source.toLowerCase() === 'maturitydate' && matcher.comparison === '<')?.text
-      const couponFrom = matchers.find(matcher => matcher.source.toLowerCase() === 'coupon' && matcher.comparison === '>')?.value as number
-      const couponTo = matchers.find(matcher => matcher.source.toLowerCase() === 'coupon' && matcher.comparison === '<')?.value as number
+      const client = matchers.find(
+        (matcher) => matcher.source.toLowerCase() === 'client',
+      )?.text
+      const side = matchers.find(
+        (matcher) => matcher.source.toLowerCase() === 'side',
+      )?.text as 'BUY' | 'SELL'
+      const size = matchers.find(
+        (matcher) => matcher.source.toLowerCase() === 'size',
+      )?.value as number
+      const sector = matchers.find(
+        (matcher) => matcher.source.toLowerCase() === 'sector',
+      )?.text
+      const isin = matchers.find(
+        (matcher) => matcher.source.toLowerCase() === 'isin2',
+      )?.text
+      const maturityDateFrom = matchers.find(
+        (matcher) =>
+          matcher.source.toLowerCase() === 'maturitydate' &&
+          matcher.comparison === '>',
+      )?.text
+      const maturityDateTo = matchers.find(
+        (matcher) =>
+          matcher.source.toLowerCase() === 'maturitydate' &&
+          matcher.comparison === '<',
+      )?.text
+      const couponFrom = matchers.find(
+        (matcher) =>
+          matcher.source.toLowerCase() === 'coupon' &&
+          matcher.comparison === '>',
+      )?.value as number
+      const couponTo = matchers.find(
+        (matcher) =>
+          matcher.source.toLowerCase() === 'coupon' &&
+          matcher.comparison === '<',
+      )?.value as number
 
       if (client && side) {
         setInterest({
@@ -540,7 +571,7 @@ const BasicExample: React.FC<BasicExampleProps> = ({ theme }) => {
           maturityDateFrom,
           maturityDateTo,
           couponFrom,
-          couponTo
+          couponTo,
         })
       }
     }
@@ -573,47 +604,139 @@ const BasicExample: React.FC<BasicExampleProps> = ({ theme }) => {
             hideToolTip={true}
           />
         </div>
-        {
-          interest && <div className='interestFormContainer'>
-            <form
-              className='interestForm'
-              onSubmit={onEnter}
-            >
-              <h3 className='interetTitle'>Enter Interest</h3>
-              <div className='interestGroup'>
-                <label className='interestLabel'>Buy/Sell:</label>
-                <input type="text" id="buysell" value={interest.side} onChange={e => setInterest({ ...interest, side: e.currentTarget.value as 'BUY' | 'SELL' })} style={{ width: 45 }} />
+        {interest && (
+          <div className="interestFormContainer">
+            <form className="interestForm" onSubmit={onEnter}>
+              <h3 className="interetTitle">Enter Interest</h3>
+              <div className="interestGroup">
+                <label className="interestLabel">Buy/Sell:</label>
+                <input
+                  type="text"
+                  id="buysell"
+                  value={interest.side}
+                  onChange={(e) =>
+                    setInterest({
+                      ...interest,
+                      side: e.currentTarget.value as 'BUY' | 'SELL',
+                    })
+                  }
+                  style={{ width: 45 }}
+                />
               </div>
-              <div className='interestGroup'>
-                <label className='interestLabel'>ISIN:</label>
-                <input type="text" style={{ width: 100 }} id="isin" value={interest.isin} onChange={e => setInterest({ ...interest, isin: e.currentTarget.value })} />
+              <div className="interestGroup">
+                <label className="interestLabel">ISIN:</label>
+                <input
+                  type="text"
+                  style={{ width: 100 }}
+                  id="isin"
+                  value={interest.isin}
+                  onChange={(e) =>
+                    setInterest({ ...interest, isin: e.currentTarget.value })
+                  }
+                />
               </div>
-              <div className='interestGroup'>
-                <label className='interestLabel'>Sector:</label>
-                <input type="text" id="indsutry" style={{ width: 120 }} value={interest.sector} onChange={e => setInterest({ ...interest, sector: e.currentTarget.value })} />
+              <div className="interestGroup">
+                <label className="interestLabel">Sector:</label>
+                <input
+                  type="text"
+                  id="indsutry"
+                  style={{ width: 120 }}
+                  value={interest.sector}
+                  onChange={(e) =>
+                    setInterest({ ...interest, sector: e.currentTarget.value })
+                  }
+                />
               </div>
-              <div className='interestGroup'>
-                <label className='interestLabel'>Maturity from:</label>
-                <input type="text" style={{ width: 120 }} id="maturityFrom" value={interest.maturityDateFrom} onChange={e => setInterest({ ...interest, maturityDateFrom: e.currentTarget.value })} />
-                <label className='interestLabelShort'>To:</label>
-                <input type="text" style={{ width: 120 }} id="maturityTo" value={interest.maturityDateTo} onChange={e => setInterest({ ...interest, maturityDateTo: e.currentTarget.value })} />
+              <div className="interestGroup">
+                <label className="interestLabel">Maturity from:</label>
+                <input
+                  type="text"
+                  style={{ width: 120 }}
+                  id="maturityFrom"
+                  value={interest.maturityDateFrom}
+                  onChange={(e) =>
+                    setInterest({
+                      ...interest,
+                      maturityDateFrom: e.currentTarget.value,
+                    })
+                  }
+                />
+                <label className="interestLabelShort">To:</label>
+                <input
+                  type="text"
+                  style={{ width: 120 }}
+                  id="maturityTo"
+                  value={interest.maturityDateTo}
+                  onChange={(e) =>
+                    setInterest({
+                      ...interest,
+                      maturityDateTo: e.currentTarget.value,
+                    })
+                  }
+                />
               </div>
-              <div className='interestGroup'>
-                <label className='interestLabel'>Coupon From:</label>
-                <input type="number" id="couponFrom" value={interest.couponFrom} style={{ width: 60 }} onChange={e => setInterest({ ...interest, couponFrom: Number.parseFloat(e.currentTarget.value) })} />
-                <label className='interestLabelShort'>To:</label>
-                <input type="number" id="couponTo" value={interest.couponTo} style={{ width: 60 }} onChange={e => setInterest({ ...interest, couponTo: Number.parseFloat(e.currentTarget.value) })} />
+              <div className="interestGroup">
+                <label className="interestLabel">Coupon From:</label>
+                <input
+                  type="number"
+                  id="couponFrom"
+                  value={interest.couponFrom}
+                  style={{ width: 60 }}
+                  onChange={(e) =>
+                    setInterest({
+                      ...interest,
+                      couponFrom: Number.parseFloat(e.currentTarget.value),
+                    })
+                  }
+                />
+                <label className="interestLabelShort">To:</label>
+                <input
+                  type="number"
+                  id="couponTo"
+                  value={interest.couponTo}
+                  style={{ width: 60 }}
+                  onChange={(e) =>
+                    setInterest({
+                      ...interest,
+                      couponTo: Number.parseFloat(e.currentTarget.value),
+                    })
+                  }
+                />
               </div>
-              <div className='interestGroup'>
-                <label className='interestLabel'>Size:</label>
-                <input style={{ width: 100 }} type="number" id="size" value={interest.size} onChange={e => setInterest({ ...interest, size: Number.parseInt(e.currentTarget.value) })} />
+              <div className="interestGroup">
+                <label className="interestLabel">Size:</label>
+                <input
+                  style={{ width: 100 }}
+                  type="number"
+                  id="size"
+                  value={interest.size}
+                  onChange={(e) =>
+                    setInterest({
+                      ...interest,
+                      size: Number.parseInt(e.currentTarget.value),
+                    })
+                  }
+                />
               </div>
-              <input ref={refAvailable} type="submit" value="Submit" style={{ alignSelf: 'flex-end', width: 60, backgroundColor: 'green', color: 'white', marginTop: '10px' }} />
+              <input
+                ref={refAvailable}
+                type="submit"
+                value="Submit"
+                style={{
+                  alignSelf: 'flex-end',
+                  width: 60,
+                  backgroundColor: 'green',
+                  color: 'white',
+                  marginTop: '10px',
+                }}
+              />
             </form>
           </div>
-        }
+        )}
         <div className="mainMultiselectGrid">
-          <div><h2>Client Interests</h2></div>
+          <div>
+            <h2>Client Interests</h2>
+          </div>
           <div className="ag-theme-alpine agGrid" style={getAgGridStyle(theme)}>
             <AgGridReact
               rowData={interests}
@@ -622,7 +745,6 @@ const BasicExample: React.FC<BasicExampleProps> = ({ theme }) => {
             ></AgGridReact>
           </div>
         </div>
-
       </div>
       {theme !== 'none' && (
         <div className="styleContainer">

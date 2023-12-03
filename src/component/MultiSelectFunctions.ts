@@ -1,5 +1,12 @@
-import { config } from 'process'
-import { Config, DataSource, FreTextFunc, Matcher, Nemonic, Option, SourceItem } from './types'
+import {
+  Config,
+  DataSource,
+  FreTextFunc,
+  Matcher,
+  Nemonic,
+  Option,
+  SourceItem,
+} from './types'
 import { DataSourceLookup, DataSourceValue } from './types/DataSource'
 import { guid } from './utils'
 
@@ -84,7 +91,9 @@ export const parseText = (
 ): Promise<Matcher[]> => {
   return new Promise((resolve) => {
     const freeTextFunc = func?.pasteFreeTextAction ?? pasteFreeTextAction
-    const parts = text.includes('"') ? protectSpacesAndSplit(text) : text.split(' ')
+    const parts = text.includes('"')
+      ? protectSpacesAndSplit(text)
+      : text.split(' ')
     const elements: (Matcher | string)[] = parts
     const promises: Promise<boolean>[] = []
     let op = 'and'
@@ -123,11 +132,20 @@ export const parseText = (
                         promises,
                         elements,
                         op,
-                        comp
+                        comp,
                       )
                     }
                   } else {
-                    matchLists(ds, d, d.source, trimmedPart, index, elements, op, comp)
+                    matchLists(
+                      ds,
+                      d,
+                      d.source,
+                      trimmedPart,
+                      index,
+                      elements,
+                      op,
+                      comp,
+                    )
                   }
                 }
               } else {
@@ -140,36 +158,39 @@ export const parseText = (
     })
 
     const resolution = () => {
-
-      resolve(freeTextFunc === 'Original'
-        ? [
-          {
-            key: guid(),
-            operator: '',
-            comparison: '',
-            source: 'Free Text',
-            value: text,
-            text: text,
-          },
-          ...(elements.filter(e => typeof e !== 'string') as Matcher[])
-        ]
-        : freeTextFunc === 'Combined'
+      resolve(
+        freeTextFunc === 'Original'
           ? [
-            joinText(elements, config),
-            ...(elements.filter(e => typeof e !== 'string') as Matcher[])
+            {
+              key: guid(),
+              operator: '',
+              comparison: '',
+              source: 'Free Text',
+              value: text,
+              text: text,
+            },
+            ...(elements.filter((e) => typeof e !== 'string') as Matcher[]),
           ]
-          : elements.filter(e => typeof e !== 'string' || notCompAndOp(e, config)).map((element) => {
-            return typeof element === 'string'
-              ? {
-                key: guid(),
-                operator: '',
-                comparison: '',
-                source: 'Free Text',
-                value: element,
-                text: element,
-              }
-              : element
-          }))
+          : freeTextFunc === 'Combined'
+            ? [
+              joinText(elements, config),
+              ...(elements.filter((e) => typeof e !== 'string') as Matcher[]),
+            ]
+            : elements
+              .filter((e) => typeof e !== 'string' || notCompAndOp(e, config))
+              .map((element) => {
+                return typeof element === 'string'
+                  ? {
+                    key: guid(),
+                    operator: '',
+                    comparison: '',
+                    source: 'Free Text',
+                    value: element,
+                    text: element,
+                  }
+                  : element
+              }),
+      )
     }
 
     let state: 'running' | 'done' | 'cancel' = 'running'
@@ -195,7 +216,7 @@ const matchExpressions = (
   index: number,
   elements: (Matcher | string)[],
   operator: string,
-  comparison: string
+  comparison: string,
 ) => {
   if (
     d.matchOnPaste &&
@@ -224,7 +245,7 @@ const matchLists = (
   index: number,
   elements: (Matcher | string)[],
   operator: string,
-  comparison: string
+  comparison: string,
 ) => {
   if (d.matchOnPaste) {
     const found = list.find((item) => {
@@ -259,7 +280,7 @@ const matchPromises = (
   promises: Promise<boolean>[],
   elements: (Matcher | string)[],
   operator: string,
-  comparison: string
+  comparison: string,
 ) => {
   promises.push(
     matchOnPaste(trimmedPart).then((v) => {
@@ -279,10 +300,17 @@ const matchPromises = (
   )
 }
 
-const notCompAndOp = (e: string, config: Config): boolean => e !== 'and' && e !== 'or' && e !== config.and && e !== config.or && !config.comparisons.includes(e)
+const notCompAndOp = (e: string, config: Config): boolean =>
+  e !== 'and' &&
+  e !== 'or' &&
+  e !== config.and &&
+  e !== config.or &&
+  !config.comparisons.includes(e)
 
 const joinText = (elements: (Matcher | string)[], config: Config): Matcher => {
-  const text = elements.filter(e => typeof e === 'string' && notCompAndOp(e, config)).join(' ')
+  const text = elements
+    .filter((e) => typeof e === 'string' && notCompAndOp(e, config))
+    .join(' ')
   return {
     key: guid(),
     operator: '',
@@ -317,11 +345,9 @@ const protectSpacesAndSplit = (text: string) => {
   return text
     .split('"')
     .map((t, i) => {
-      return i % 2 === 1
-        ? t.replaceAll(' ', '^¬|')
-        : t
+      return i % 2 === 1 ? t.replaceAll(' ', '^¬|') : t
     })
     .join('"')
     .split(' ')
-    .map(t => t.replaceAll('^¬|', ' ').replaceAll('"', ''))
+    .map((t) => t.replaceAll('^¬|', ' ').replaceAll('"', ''))
 }

@@ -45,7 +45,11 @@ interface MultiSelectProps {
   operators?: 'Simple' | 'AgGrid' | 'Complex'
   onMatchersChanged?: (matchers: Matcher[]) => void
   onComplete?: (matchers: Matcher[], func?: string) => void
-  onCompleteError?: (func: string, errorMessage: string, missingFields?: string[]) => void
+  onCompleteError?: (
+    func: string,
+    errorMessage: string,
+    missingFields?: string[],
+  ) => void
   clearIcon?: React.ReactElement
   maxDropDownHeight?: number
   minDropDownWidth?: number
@@ -168,7 +172,11 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       )
       if (missing.length > 0) {
         if (onCompleteError) {
-          onCompleteError(activeFunction.name, `mandatory fields are missing (${missing.join('',)})`, missing)
+          onCompleteError(
+            activeFunction.name,
+            `mandatory fields are missing (${missing.join('')})`,
+            missing,
+          )
         }
         return false
       }
@@ -278,8 +286,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         mtch.key === matcher.key
           ? swapMatcher
           : mtch.key === swapMatcher.key
-            ? matcher
-            : mtch,
+          ? matcher
+          : mtch,
       )
       updatedMatchers(newMatchers)
     }
@@ -291,9 +299,9 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       currentMatchers.map((m) => {
         return m.key === matcher.key
           ? {
-            ...matcher,
-            changing: true,
-          }
+              ...matcher,
+              changing: true,
+            }
           : m
       }),
     )
@@ -325,8 +333,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             activeMatcher === null
               ? currentMatchers.length - 1
               : activeMatcher > 0
-                ? activeMatcher - 1
-                : null,
+              ? activeMatcher - 1
+              : null,
           )
           event.preventDefault()
         } else if (
@@ -346,8 +354,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             activeMatcher === null
               ? 0
               : activeMatcher < currentMatchers.length - 1
-                ? activeMatcher + 1
-                : null,
+              ? activeMatcher + 1
+              : null,
           )
           event.preventDefault()
         } else if (
@@ -405,16 +413,28 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
     const text = event.clipboardData?.getData('text')
     if (text) {
-      parseText(text, dataSources, activeFunction, config, pasteFreeTextAction, pasteMatchTimeout).then(m =>
-        updatedMatchers([...currentMatchers, ...m])
-      )
+      parseText(
+        text,
+        dataSources,
+        activeFunction,
+        config,
+        pasteFreeTextAction,
+        pasteMatchTimeout,
+      ).then((m) => updatedMatchers([...currentMatchers, ...m]))
     }
     event.stopPropagation()
     event.preventDefault()
   }
 
   const handleCopy = (event: React.ClipboardEvent<HTMLDivElement>) => {
-    const matcherText = (m: Matcher) => `${m.operator !== 'and' && m.operator !== config.and ? `${m.comparison} ` : ''}${m.comparison !== '=' ? `${m.comparison} ` : ''}${m.text.includes(' ') ? `"${m.text}"` : m.text}`
+    const matcherText = (m: Matcher) =>
+      `${
+        m.operator !== 'and' && m.operator !== config.and
+          ? `${m.comparison} `
+          : ''
+      }${m.comparison !== '=' ? `${m.comparison} ` : ''}${
+        m.text.includes(' ') ? `"${m.text}"` : m.text
+      }`
     const text = activeFunction
       ? `${activeFunction.name} ${currentMatchers.map(matcherText).join(' ')}`
       : currentMatchers.map(matcherText).join(' ')
@@ -446,7 +466,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 {clearIcon ? clearIcon : <MdClear />}
               </div>
             )}
-            <div className='multiSelectFlow'>
+            <div className="multiSelectFlow">
               {activeFunction && (
                 <MatcherView
                   key={'function'}
@@ -549,7 +569,7 @@ export type {
   OperatorDisplay,
   SourceItem,
   Nemonic,
-  FreTextFunc
+  FreTextFunc,
 }
 export { defaultComparison, stringComparisons, numberComparisons, isUnique }
 export default MultiSelect

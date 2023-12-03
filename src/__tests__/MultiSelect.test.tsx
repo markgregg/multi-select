@@ -16,7 +16,11 @@ const simpleDataSource: DataSource[] = [
     comparisons: defaultComparison,
     precedence: 1,
     selectionLimit: 2,
-    source: ['asdas', 'assda', 'loadsp'],
+    definitions: [
+      {
+        source: ['asdas', 'assda', 'loadsp'],
+      }
+    ]
   },
 ]
 

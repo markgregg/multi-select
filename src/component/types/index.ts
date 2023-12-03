@@ -22,7 +22,7 @@ export type {
   SourceItem,
   Nemonic,
   Selection,
-  FreTextFunc
+  FreTextFunc,
 }
 
 export { defaultComparison, stringComparisons, numberComparisons, FUNC_ID }
