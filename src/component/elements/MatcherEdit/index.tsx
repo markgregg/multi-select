@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Matcher, Option, Config, Selection } from '../../types'
+import { Matcher, Option, Config, Selection, DataSource } from '../../types'
 import {
   hasFocusContext,
   configContext,
@@ -11,8 +11,15 @@ import MutliSelectStyles from '../../types/MutliSelectStyles'
 import ErrorMessage from '../ErrorMessage'
 import Nemonic from '@/component/types/Nemonic'
 import { FUNC_ID } from '@/component/types/Opton'
-import { FUNCTIONS_TEXT, getCategoryIndex, insertOptions, matchItems, updateOptions } from './MatcherEditFunctions'
+import {
+  FUNCTIONS_TEXT,
+  getCategoryIndex,
+  insertOptions,
+  matchItems,
+  updateOptions,
+} from './MatcherEditFunctions'
 import './MatcherEdit.css'
+import { DataSourceLookup, DataSourceValue } from '@/component/types/DataSource'
 
 interface MatcherEditProps {
   matcher?: Matcher
@@ -29,10 +36,9 @@ interface MatcherEditProps {
   inFocus?: boolean
   first: boolean
   allowFunctions?: boolean
+  allowFreeText?: boolean
   styles?: MutliSelectStyles
 }
-
-
 
 const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
   (props, ref) => {
@@ -48,6 +54,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       inFocus,
       first,
       allowFunctions,
+      allowFreeText,
       styles,
       onChanging,
       onSetActiveFunction,
@@ -57,8 +64,11 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const inputRef = React.useRef<HTMLInputElement | null>(null)
     const [text, setText] = React.useState<string>(
       matcher
-        ? `${!first && config.operators !== 'Simple' ? matcher.operator + ' ' : ''}${matcher.comparison
-        }${matcher.text}`
+        ? `${
+            !first && config.operators !== 'Simple'
+              ? matcher.operator + ' '
+              : ''
+          }${matcher.comparison}${matcher.text}`
         : '',
     )
     const [comparison, setComparison] = React.useState<string>(
@@ -93,27 +103,33 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       setActiveOption(null)
     }
 
-    const checkForOperator = (searchText: string): [string, 'or' | 'and' | null] => {
+    const checkForOperator = (
+      searchText: string,
+      functionState: FunctionState,
+    ): string => {
       if (searchText.length > 2) {
         const symbol = searchText.substring(0, 3)
         if (symbol === 'and') {
           setOperator(config.and)
-          return [searchText.substring(3).trim(), 'and']
+          functionState.op = 'and'
+          return searchText.substring(3).trim()
         }
       }
       if (searchText.length > 1) {
         const symbol = searchText.substring(0, 2)
         if (symbol === 'or') {
           setOperator(config.or)
-          return [searchText.substring(2).trim(), 'or']
+          functionState.op = 'or'
+          return searchText.substring(2).trim()
         }
       }
       const symbol = searchText[0]
       if (symbol === config.and || symbol === config.or) {
         setOperator(symbol)
-        return [searchText.substring(1).trim(), symbol === config.and ? 'and' : 'or']
+        functionState.op = symbol === config.and ? 'and' : 'or'
+        return searchText.substring(1).trim()
       }
-      return [searchText, null]
+      return searchText
     }
 
     const checkForComparison = (searchText: string): string | null => {
@@ -124,7 +140,6 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           return searchText.substring(2).trim()
         }
       }
-
       const symbol = searchText[0]
       if (
         config.operators === 'Complex' &&
@@ -154,11 +169,166 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       return searchText
     }
 
+    interface FunctionState {
+      allOptions: [string, Option[]][]
+      totalCount: number
+      op: 'or' | 'and' | null
+    }
+
+    const buildOptions = (
+      newText: string,
+      currentKey: string,
+      functionState: FunctionState,
+    ) => {
+      if (newText.length > 0) {
+        let searchText = newText.trim()
+        if (searchText.length > 0 && searchText[0] !== '"') {
+          if (
+            config.operators !== 'Simple' &&
+            (!selection.activeFunction || !selection.activeFunction.noAndOr)
+          ) {
+            searchText = checkForOperator(searchText, functionState)
+          }
+          const result = checkForComparison(searchText)
+          if (result !== null) {
+            searchText = result
+            if (searchText.length >= (config.searchStartLength ?? 0)) {
+              if (allowFunctions && config.functions) {
+                buildFunctionOptions(
+                  searchText,
+                  config.functions,
+                  functionState,
+                )
+              }
+              config.dataSources.forEach((ds) => {
+                if (
+                  (!selection.activeFunction && !ds.functional) ||
+                  (selection.activeFunction &&
+                    (selection.activeFunction.requiredDataSources?.includes(
+                      ds.name,
+                    ) ||
+                      selection.activeFunction.optionalDataSources?.includes(
+                        ds.name,
+                      )))
+                ) {
+                  ds.definitions.forEach((vm) => {
+                    if ('source' in vm) {
+                      buildListOptions(
+                        searchText,
+                        ds,
+                        vm,
+                        currentKey,
+                        functionState,
+                      )
+                    } else {
+                      buildExpressionOptions(
+                        searchText,
+                        ds,
+                        vm,
+                        currentKey,
+                        functionState,
+                      )
+                    }
+                  })
+                }
+              })
+            }
+          }
+        }
+      }
+    }
+
+    const buildFunctionOptions = (
+      searchText: string,
+      numomics: Nemonic[],
+      functionState: FunctionState,
+    ) => {
+      const functions = numomics
+        .filter((func) =>
+          func.name.toUpperCase().includes(searchText.toUpperCase()),
+        )
+        .map((func) => {
+          return {
+            source: FUNC_ID,
+            text: func.name,
+            value: func.name,
+          }
+        })
+      if (functions.length > 0) {
+        functionState.allOptions.push([FUNCTIONS_TEXT, functions])
+        functionState.totalCount += functions.length
+      }
+    }
+
+    const buildListOptions = (
+      searchText: string,
+      ds: DataSource,
+      dsl: DataSourceLookup,
+      currentKey: string,
+      functionState: FunctionState,
+    ) => {
+      if (searchText.length >= (dsl.searchStartLength ?? 0)) {
+        if (typeof dsl.source === 'function') {
+          dsl
+            .source(searchText, functionState.op, selection.matchers)
+            .then((items) => {
+              if (currentKey === key.current) {
+                functionState.totalCount += updateOptions(
+                  items,
+                  ds,
+                  dsl,
+                  functionState.allOptions,
+                  config.defaultItemLimit,
+                  config.dataSources,
+                )
+                updateState(functionState)
+              }
+            })
+        } else {
+          if (currentKey === key.current) {
+            const items = dsl.source.filter((item) =>
+              matchItems(item, dsl, searchText),
+            )
+            if (items.length > 0) {
+              functionState.totalCount += updateOptions(
+                items,
+                ds,
+                dsl,
+                functionState.allOptions,
+                config.defaultItemLimit,
+                config.dataSources,
+              )
+            }
+          }
+        }
+      }
+    }
+
+    const buildExpressionOptions = (
+      searchText: string,
+      ds: DataSource,
+      dsv: DataSourceValue,
+      currentKey: string,
+      functionState: FunctionState,
+    ) => {
+      if (
+        ((dsv.match instanceof RegExp && searchText.match(dsv.match)) ||
+          (typeof dsv.match === 'function' && dsv.match(searchText))) &&
+        currentKey === key.current
+      ) {
+        const value = dsv.value(searchText)
+        insertOptions(
+          functionState.allOptions,
+          ds,
+          [{ source: ds.name, value, text: value.toString() }],
+          config.dataSources,
+        )
+        functionState.totalCount += 1
+      }
+    }
+
     const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const currentKey = guid()
-      key.current = currentKey
       const newText = event.target.value
-      const allOptions: [string, Option[]][] = []
       setComparison('=')
       setOperator('&')
 
@@ -168,236 +338,238 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           onChanging()
         }
       }
-      let totalCount = 0
-      let op: 'or' | 'and' | null = null
-      if (newText.length > 0) {
-        let searchText = newText.trim()
-        if (
-          config.operators !== 'Simple' &&
-          (!selection.activeFunction || !selection.activeFunction.noAndOr)
-        ) {
-          [searchText, op] = checkForOperator(searchText)
-        }
-        const result = checkForComparison(searchText)
-        if (result === null) {
-          return
-        }
-        searchText = result
-        if (searchText.length >= (config.searchStartLength ?? 0)) {
-          if (allowFunctions && config.functions) {
-            const functions = config.functions
-              .filter((func) =>
-                func.name.toUpperCase().includes(searchText.toUpperCase()),
-              )
-              .map((func) => {
-                return {
-                  source: FUNC_ID,
-                  text: func.name,
-                  value: func.name,
-                }
-              })
-            if (functions.length > 0) {
-              allOptions.push([FUNCTIONS_TEXT, functions])
-              totalCount += functions.length
-            }
-          }
-          config.dataSources.forEach((ds) => {
-            if ((!selection.activeFunction && !ds.functional) ||
-              (selection.activeFunction && (
-                selection.activeFunction.requiredDataSources?.includes(ds.name) ||
-                selection.activeFunction.optionalDataSources?.includes(ds.name)))
-            ) {
-              if ('source' in ds) {
-                if (searchText.length >= (ds.searchStartLength ?? 0)) {
-                  if (typeof ds.source === 'function') {
-                    ds.source(searchText, op, selection.matchers).then((items) => {
-                      if (currentKey === key.current) {
-                        totalCount += updateOptions(items, ds, allOptions, config.defaultItemLimit, config.dataSources)
-                        updateState(allOptions, totalCount)
-                      }
-                    })
-                  } else {
-                    if (currentKey === key.current) {
-                      const items = ds.source.filter((item) =>
-                        matchItems(item, ds, searchText),
-                      )
-                      if (items.length > 0) {
-                        totalCount += updateOptions(items, ds, allOptions, config.defaultItemLimit, config.dataSources)
-                      }
-                    }
-                  }
-                }
-              } else if (
-                ((ds.match instanceof RegExp && searchText.match(ds.match)) ||
-                  (typeof ds.match === 'function' && ds.match(searchText))) &&
-                currentKey === key.current
-              ) {
-                const value = ds.value(searchText)
-                insertOptions(
-                  allOptions,
-                  ds,
-                  [{ source: ds.name, value, text: value.toString() }],
-                  config.dataSources)
-                totalCount += 1
-              }
-            }
-          })
-        }
+      const currentKey = guid()
+      key.current = currentKey
+      const functionState: FunctionState = {
+        allOptions: [],
+        totalCount: 0,
+        op: null,
       }
+      buildOptions(newText, currentKey, functionState)
       setText(newText)
-      updateState(allOptions, totalCount)
+      updateState(functionState)
     }
 
-    const updateState = (
-      options: [string, Option[]][],
-      totalOptions: number,
-    ) => {
-      setOptions(options)
-      setTotalOptions(totalOptions)
-      if (totalOptions > 0) {
+    const updateState = (functionState: FunctionState) => {
+      const { allOptions, totalCount } = functionState
+      setOptions(allOptions)
+      setTotalOptions(totalCount)
+      if (totalCount > 0) {
         if (activeOption === null) {
           setActiveOption(0)
-        } else if (activeOption >= totalOptions) {
+        } else if (activeOption >= totalCount) {
+          setActiveOption(totalCount - 1)
+        }
+      }
+    }
+
+    const handleDeleteKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (onEditPrevious && !event.shiftKey && !event.ctrlKey) {
+        if (first && onDeleteActiveFunction) {
+          onDeleteActiveFunction()
+        } else {
+          onEditPrevious(true)
+        }
+        return true
+      } else if (onCancel) {
+        //not standalone edit
+        selectOption()
+        return true
+      }
+      return false
+    }
+
+    const handleCancel = () => {
+      if (onCancel) {
+        onCancel()
+      }
+      return true
+    }
+
+    const handleDeleteOption = () => {
+      selectOption()
+      return true
+    }
+
+    const handleOptionSelection = (
+      event: React.KeyboardEvent<HTMLInputElement>,
+    ) => {
+      const optionsArray = options.flatMap((pair) => pair[1])
+      if (activeOption !== null && optionsArray.length > activeOption) {
+        if (optionsArray[activeOption].source === FUNC_ID) {
+          const func = config.functions?.find(
+            (func) => func.name === optionsArray[activeOption].text,
+          )
+          if (func && onSetActiveFunction) {
+            onSetActiveFunction(func)
+            resetEdit()
+          }
+        } else {
+          if (event.shiftKey) {
+            insertMatcher(optionsArray[activeOption])
+          } else {
+            selectOption(optionsArray[activeOption])
+          }
+        }
+        return true
+      }
+      return false
+    }
+
+    const captureFreeText = () => {
+      if (allowFreeText) {
+        const newMatcher: Matcher = {
+          key: guid(),
+          operator: '',
+          comparison: '"',
+          source: 'Free Text',
+          value: text.substring(1),
+          text: text.substring(1),
+        }
+        onMatcherChanged(newMatcher)
+        resetEdit()
+        return true
+      }
+      return false
+    }
+
+    const end = () => {
+      if (totalOptions > 0) {
+        setActiveOption(totalOptions - 1)
+        return true
+      }
+      return false
+    }
+
+    const home = () => {
+      if (totalOptions > 0) {
+        setActiveOption(0)
+        return true
+      }
+      return false
+    }
+
+    const pageDown = () => {
+      if (totalOptions > 0) {
+        setActiveOption(
+          getCategoryIndex(activeOption ?? totalOptions - 1, options),
+        )
+        return true
+      }
+      return false
+    }
+
+    const pageUp = () => {
+      if (totalOptions > 0) {
+        setActiveOption(getCategoryIndex(activeOption ?? 0, options, false))
+        return true
+      }
+      return false
+    }
+
+    const arrowDown = () => {
+      if (activeOption === null) {
+        setActiveOption(0)
+      } else {
+        if (activeOption < totalOptions - 1) {
+          setActiveOption(activeOption + 1)
+        } else {
+          setActiveOption(0)
+        }
+      }
+      return true
+    }
+
+    const arrowUp = () => {
+      if (activeOption === null) {
+        setActiveOption(totalOptions - 1)
+      } else {
+        if (activeOption > 0) {
+          setActiveOption(activeOption - 1)
+        } else {
           setActiveOption(totalOptions - 1)
         }
       }
+      return true
     }
 
+    const arrowRight = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (
+        inputRef.current &&
+        !event.ctrlKey &&
+        !event.shiftKey &&
+        event.currentTarget.selectionStart ===
+          event.currentTarget.value.length &&
+        onEditNext
+      ) {
+        onEditNext()
+        return true
+      }
+      return false
+    }
+
+    const arrowLeft = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (
+        inputRef.current &&
+        !event.ctrlKey &&
+        !event.shiftKey &&
+        event.currentTarget.selectionStart === 0
+      ) {
+        onEditPrevious(false)
+        return true
+      }
+      return false
+    }
 
     const keyPressed = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      let stopPropagation = false
       setError(null)
       switch (event.code) {
         case 'ArrowLeft':
-          if (
-            inputRef.current &&
-            !event.ctrlKey &&
-            !event.shiftKey &&
-            event.currentTarget.selectionStart === 0
-          ) {
-            onEditPrevious(false)
-            event.preventDefault()
-            event.stopPropagation()
-          }
+          stopPropagation = arrowLeft(event)
           break
         case 'ArrowRight':
-          if (
-            inputRef.current &&
-            !event.ctrlKey &&
-            !event.shiftKey &&
-            event.currentTarget.selectionStart ===
-            event.currentTarget.value.length &&
-            onEditNext
-          ) {
-            onEditNext()
-            event.preventDefault()
-            event.stopPropagation()
-          }
+          stopPropagation = arrowRight(event)
           break
         case 'ArrowUp':
-          if (activeOption === null) {
-            setActiveOption(totalOptions - 1)
-          } else {
-            if (activeOption > 0) {
-              setActiveOption(activeOption - 1)
-            } else {
-              setActiveOption(totalOptions - 1)
-            }
-          }
-          event.preventDefault()
-          event.stopPropagation()
+          stopPropagation = arrowUp()
           break
         case 'ArrowDown':
-          if (activeOption === null) {
-            setActiveOption(0)
-          } else {
-            if (activeOption < totalOptions - 1) {
-              setActiveOption(activeOption + 1)
-            } else {
-              setActiveOption(0)
-            }
-          }
-          event.preventDefault()
-          event.stopPropagation()
+          stopPropagation = arrowDown()
           break
         case 'PageUp':
-          if (totalOptions > 0) {
-            setActiveOption(getCategoryIndex(activeOption ?? 0, options, false))
-            event.preventDefault()
-            event.stopPropagation()
-          }
+          stopPropagation = pageUp()
           break
         case 'PageDown':
-          if (totalOptions > 0) {
-            setActiveOption(getCategoryIndex(activeOption ?? totalOptions - 1, options))
-            event.preventDefault()
-            event.stopPropagation()
-          }
+          stopPropagation = pageDown()
           break
         case 'Home':
-          if (totalOptions > 0) {
-            setActiveOption(0)
-            event.preventDefault()
-            event.stopPropagation()
-          }
+          stopPropagation = home()
           break
         case 'End':
-          if (totalOptions > 0) {
-            setActiveOption(totalOptions - 1)
-            event.preventDefault()
-            event.stopPropagation()
-          }
+          stopPropagation = end()
           break
         case 'Enter':
         case 'Tab':
-          if (options.length > 0 && activeOption !== null) {
-            const optionsArray = options.flatMap((pair) => pair[1])
-            if (optionsArray.length > activeOption) {
-              if (optionsArray[activeOption].source === FUNC_ID) {
-                const func = config.functions?.find(
-                  (func) => func.name === optionsArray[activeOption].text,
-                )
-                if (func && onSetActiveFunction) {
-                  onSetActiveFunction(func)
-                  resetEdit()
-                }
-              } else {
-                if (event.shiftKey) {
-                  insertMatcher(optionsArray[activeOption])
-                } else {
-                  selectOption(optionsArray[activeOption])
-                }
-              }
-              event.preventDefault()
-              event.stopPropagation()
-            }
+          if (text.length > 0 && text[0] === '"') {
+            stopPropagation = captureFreeText()
+          } else if (options.length > 0 && activeOption !== null) {
+            stopPropagation = handleOptionSelection(event)
           } else if (text.length === 0 && matcher) {
-            selectOption()
-            event.preventDefault()
-            event.stopPropagation()
+            stopPropagation = handleDeleteOption()
           } else if (matcher && onCancel) {
-            onCancel()
-            event.preventDefault()
-            event.stopPropagation()
+            stopPropagation = handleCancel()
           }
           break
         case 'Backspace':
           if (text.length === 0) {
-            if (onEditPrevious && !event.shiftKey && !event.ctrlKey) {
-              if (first && onDeleteActiveFunction) {
-                onDeleteActiveFunction()
-              } else {
-                onEditPrevious(true)
-              }
-              event.preventDefault()
-              event.stopPropagation()
-            } else if (onCancel) {
-              //not standalone edit
-              selectOption()
-              event.preventDefault()
-              event.stopPropagation()
-            }
+            stopPropagation = handleDeleteKey(event)
           }
           break
+      }
+      if (stopPropagation) {
+        event.preventDefault()
+        event.stopPropagation()
       }
     }
 
@@ -426,13 +598,13 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       }
       const newMatcher: Matcher | null = option
         ? {
-          key: matcher?.key ?? guid(),
-          operator: option === ')' ? '' : operator,
-          comparison: option === '(' || option === ')' ? option : comparison,
-          source: typeof option === 'object' ? option.source : '',
-          value: typeof option === 'object' ? option.value : '',
-          text: typeof option === 'object' ? option.text : '',
-        }
+            key: matcher?.key ?? guid(),
+            operator: option === ')' ? '' : operator,
+            comparison: option === '(' || option === ')' ? option : comparison,
+            source: typeof option === 'object' ? option.source : '',
+            value: typeof option === 'object' ? option.value : '',
+            text: typeof option === 'object' ? option.text : '',
+          }
         : null
       if (newMatcher && onValidate) {
         const err = onValidate(newMatcher)

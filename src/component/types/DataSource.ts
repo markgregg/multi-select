@@ -2,23 +2,19 @@ import Matcher, { Value } from './Matcher'
 
 export type SourceItem = string | object
 
-export interface DataSourceBase {
-  name: string
-  title: string
-  comparisons: string[]
-  precedence?: number
-  selectionLimit?: number
-  functional?: boolean
-}
-
 export const defaultComparison: string[] = ['=', '!']
 export const stringComparisons: string[] = ['=', '!', '*', '!*', '<*', '>*']
 export const numberComparisons: string[] = ['=', '>', '<', '>=', '<=', '!']
 
-export interface DataSourceLookup extends DataSourceBase {
+export interface DataSourceLookup {
   source:
   | SourceItem[]
-  | ((text: string, op: 'or' | 'and' | null, matchers: Matcher[]) => Promise<SourceItem[]>)
+  | ((
+    text: string,
+    op: 'or' | 'and' | null,
+    matchers: Matcher[],
+  ) => Promise<SourceItem[]>)
+  matchOnPaste?: boolean | ((text: string) => Promise<SourceItem | null>)
   textGetter?: (item: object) => string
   valueGetter?: (item: object) => Value
   ignoreCase?: boolean
@@ -26,11 +22,22 @@ export interface DataSourceLookup extends DataSourceBase {
   searchStartLength?: number
 }
 
-export interface DataSourceValue extends DataSourceBase {
+export interface DataSourceValue {
   match: RegExp | ((text: string) => boolean)
   value: (text: string) => Value
+  matchOnPaste?: boolean
 }
 
-type DataSource = DataSourceLookup | DataSourceValue
+type DataSourceMatch = DataSourceLookup | DataSourceValue
+
+export interface DataSource {
+  name: string
+  title: string
+  comparisons: string[]
+  precedence?: number
+  selectionLimit?: number
+  functional?: boolean
+  definitions: DataSourceMatch[]
+}
 
 export default DataSource

@@ -10,7 +10,7 @@ import {
 } from '@/component/types'
 import MultiSelect from '@/component/MultiSelect'
 import { AgGridReact } from 'ag-grid-react'
-import { fetchBondsAndCache } from '@/services/bondsService'
+import { bonds } from '@/data/bonds'
 import Bond from '@/types/Bond'
 import { ColDef, IRowNode } from 'ag-grid-community'
 import { createFilter } from '@/types/AgFilter'
@@ -45,7 +45,7 @@ const extractDate = (text: string) => {
 const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
   const agGridRef = React.useRef<AgGridReact<Bond> | null>(null)
   const [matchers, setMatchers] = React.useState<Matcher[]>()
-  const [rowData, setRowData] = React.useState<Bond[]>()
+  const [rowData] = React.useState<Bond[]>(bonds)
   const [columnDefs] = React.useState<ColDef<Bond>[]>([
     {
       field: 'isin',
@@ -93,7 +93,11 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
   const [filterSources, setFilterSources] = React.useState<string[]>([])
 
   const findItems = React.useCallback(
-    (text: string, field: 'isin' | 'currency' | 'issuer', isOr: boolean): SourceItem[] => {
+    (
+      text: string,
+      field: 'isin' | 'currency' | 'issuer',
+      isOr: boolean,
+    ): SourceItem[] => {
       const uniqueItems = new Set<string>()
       const callback = (row: IRowNode<Bond>) => {
         if (row.data) {
@@ -116,17 +120,26 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
     },
     [],
   )
-
-  const functions = React.useMemo<Nemonic[]>(
-    () => [
-      {
-        name: 'Interest',
-        requiredDataSources: ['ISIN', 'Client'],
-        optionalDataSources: ['Coupon', 'MaturityDate']
-      },
-    ],
+  const findItem = React.useCallback(
+    (
+      text: string,
+      field: 'isin' | 'currency' | 'issuer'
+    ): SourceItem[] => {
+      let found: any | null = null
+      const callback = (row: IRowNode<Bond>) => {
+        if (row.data) {
+          const value = row.data[field]
+          if (value && value === text) {
+            found = value
+          }
+        }
+      }
+      agGridRef.current?.api?.forEachNode(callback)
+      return found
+    },
     [],
   )
+
   const dataSource = React.useMemo<DataSource[]>(
     () => [
       {
@@ -134,26 +147,51 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         title: 'ISIN Code',
         comparisons: defaultComparison,
         precedence: 3,
-        ignoreCase: true,
-        searchStartLength: 1,
         selectionLimit: 2,
-        source: async (text, op) =>
-          new Promise((resolve) => {
-            setTimeout(() => resolve(findItems(text, 'isin', op === 'or')), 5)
-          }),
+        definitions: [
+          {
+            ignoreCase: true,
+            searchStartLength: 1,
+            source: async (text, op) =>
+              new Promise((resolve) => {
+                setTimeout(
+                  () => resolve(findItems(text, 'isin', op === 'or')),
+                  5,
+                )
+              }),
+            matchOnPaste: async (text) =>
+              new Promise((resolve) => {
+                setTimeout(() => {
+                  resolve(findItem(text, 'isin'))
+                }, 5)
+              }),
+          },
+        ],
       },
       {
         name: 'Currency',
         title: 'Currency Code',
         comparisons: defaultComparison,
         precedence: 2,
-        ignoreCase: true,
         selectionLimit: 2,
-        source: async (text, op) =>
-          new Promise((resolve) => {
-            setTimeout(() => resolve(findItems(text, 'currency', op === 'or')), 5)
-          }),
-        showInMenuBar: true,
+        definitions: [
+          {
+            ignoreCase: true,
+            source: async (text, op) =>
+              new Promise((resolve) => {
+                setTimeout(
+                  () => resolve(findItems(text, 'currency', op === 'or')),
+                  5,
+                )
+              }),
+            matchOnPaste: async (text) =>
+              new Promise((resolve) => {
+                setTimeout(() => {
+                  resolve(findItem(text, 'currency'))
+                }, 5)
+              }),
+          },
+        ],
       },
       {
         name: 'Coupon',
@@ -161,17 +199,13 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         comparisons: numberComparisons,
         precedence: 1,
         selectionLimit: 2,
-        match: (text: string) => !isNaN(Number(text)),
-        value: (text: string) => Number.parseFloat(text),
-      },
-      {
-        name: 'Price',
-        title: 'Price',
-        comparisons: numberComparisons,
-        precedence: 1,
-        selectionLimit: 2,
-        match: (text: string) => !isNaN(Number(text)),
-        value: (text: string) => Number.parseFloat(text),
+        definitions: [
+          {
+            match: (text: string) => !isNaN(Number(text)),
+            value: (text: string) => Number.parseFloat(text),
+            matchOnPaste: true
+          },
+        ],
       },
       {
         name: 'Size',
@@ -179,18 +213,28 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         comparisons: numberComparisons,
         precedence: 1,
         selectionLimit: 2,
-        match: (text: string) => !isNaN(Number(text)),
-        value: (text: string) => Number.parseInt(text),
+        definitions: [
+          {
+            match: (text: string) => !isNaN(Number(text)),
+            value: (text: string) => Number.parseInt(text),
+            matchOnPaste: true
+          },
+        ],
       },
       {
         name: 'Side',
         title: 'Side',
         comparisons: stringComparisons,
         precedence: 4,
-        ignoreCase: true,
-        searchStartLength: 2,
         selectionLimit: 2,
-        source: ['BUY', 'SELL'],
+        definitions: [
+          {
+            ignoreCase: true,
+            searchStartLength: 2,
+            source: ['BUY', 'SELL'],
+            matchOnPaste: true
+          },
+        ],
       },
       {
         name: 'HairCut',
@@ -198,31 +242,44 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         comparisons: numberComparisons,
         precedence: 1,
         selectionLimit: 2,
-        match: (text: string) => !isNaN(Number(text)),
-        value: (text: string) => Number.parseFloat(text),
+        definitions: [
+          {
+            match: (text: string) => !isNaN(Number(text)),
+            value: (text: string) => Number.parseFloat(text),
+            matchOnPaste: false
+          },
+        ],
       },
       {
         name: 'Issuer',
         title: 'Issuer',
         comparisons: stringComparisons,
         precedence: 1,
-        ignoreCase: true,
         selectionLimit: 2,
-        match: /^[a-zA-Z ]{2,}$/,
-        value: (text: string) => text,
-      },
-      {
-        name: 'Issuer2',
-        title: 'Issuer',
-        comparisons: defaultComparison,
-        precedence: 1,
-        ignoreCase: false,
-        searchStartLength: 3,
-        selectionLimit: 2,
-        source: async (text, op) =>
-          new Promise((resolve) => {
-            setTimeout(() => resolve(findItems(text, 'issuer', op === 'or')), 5)
-          }),
+        definitions: [
+          {
+            ignoreCase: true,
+            match: /^[a-zA-Z ]{2,}$/,
+            value: (text: string) => text,
+          },
+          {
+            searchStartLength: 3,
+            ignoreCase: false,
+            source: async (text, op) =>
+              new Promise((resolve) => {
+                setTimeout(
+                  () => resolve(findItems(text, 'issuer', op === 'or')),
+                  5,
+                )
+              }),
+            matchOnPaste: async (text) =>
+              new Promise((resolve) => {
+                setTimeout(() => {
+                  resolve(findItem(text, 'issuer'))
+                }, 5)
+              }),
+          }
+        ],
       },
       {
         name: 'MaturityDate',
@@ -230,8 +287,13 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         comparisons: numberComparisons,
         precedence: 4,
         selectionLimit: 2,
-        match: /^[0-9]{0,2}[yYmM]$/,
-        value: (text: string) => extractDate(text),
+        definitions: [
+          {
+            match: /^[0-9]{0,2}[yYmM]$/,
+            value: (text: string) => extractDate(text),
+            matchOnPaste: true
+          },
+        ],
       },
       {
         name: 'IssueDate',
@@ -239,41 +301,17 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         comparisons: numberComparisons,
         precedence: 3,
         selectionLimit: 2,
-        match: /^[0-9]{0,2}[yYmM]$/,
-        value: (text: string) => extractDate(text),
-      },
-      {
-        name: 'Client',
-        title: 'Client',
-        comparisons: defaultComparison,
-        precedence: 1,
-        ignoreCase: false,
-        searchStartLength: 3,
-        selectionLimit: 2,
-        functional: true,
-        source: async (text, op) =>
-          new Promise((resolve) => {
-            setTimeout(() => resolve(findItems(text, 'issuer', op === 'or')), 5)
-          }),
-      },
+        definitions: [
+          {
+            match: /^[0-9]{0,2}[yYmM]$/,
+            value: (text: string) => extractDate(text),
+            matchOnPaste: true
+          },
+        ],
+      }
     ],
     [findItems],
   )
-
-  React.useEffect(() => {
-    fetchBondsAndCache()
-      .then(setRowData)
-      .catch((error) => {
-        if (typeof error === 'string') {
-          console.log(error)
-        } else if (error instanceof Error) {
-          console.log(error.message)
-          console.log(error.stack)
-        } else {
-          console.log(error.toString())
-        }
-      })
-  }, [])
 
   const getColumn = (source: string): string => {
     switch (source) {
@@ -288,10 +326,12 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
   }
 
   const matchersChanged = (newMatchers: Matcher[]) => {
-    const sources = newMatchers.filter(m => !m.changing).map((m) => m.source)
+    const sources = newMatchers.filter((m) => !m.changing).map((m) => m.source)
     sources.forEach((source) => {
       const column = getColumn(source)
-      const values = newMatchers.filter((m) => m.source === source && !m.changing)
+      const values = newMatchers.filter(
+        (m) => m.source === source && !m.changing,
+      )
       const filter = createFilter(values)
       const instance = agGridRef.current?.api?.getFilterInstance(column)
       if (instance) {
@@ -319,7 +359,6 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         <MultiSelect
           matchers={matchers}
           dataSources={dataSource}
-          functions={functions}
           onMatchersChanged={matchersChanged}
           styles={styleFromTheme(theme)}
           maxDropDownHeight={120}
@@ -328,8 +367,12 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
         />
       </div>
       <div className="ag-theme-alpine agGrid" style={getAgGridStyle(theme)}>
-        <AgGridReact ref={agGridRef} rowData={rowData} columnDefs={columnDefs} enableAdvancedFilter={true}>
-        </AgGridReact>
+        <AgGridReact
+          ref={agGridRef}
+          rowData={rowData}
+          columnDefs={columnDefs}
+          enableAdvancedFilter={true}
+        ></AgGridReact>
       </div>
     </div>
   )

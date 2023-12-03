@@ -13,6 +13,7 @@ import {
   numberComparisons,
   Selection,
   Nemonic,
+  FreTextFunc,
 } from './types'
 import { isUnique } from './utils'
 import {
@@ -23,9 +24,13 @@ import {
 } from './state/context'
 import MatcherView from './elements/MatcherView'
 import MatcherEdit from './elements/MatcherEdit'
-import { checkBracket, validateMatcher } from './MultiSelectFunctions'
+import {
+  checkBracket,
+  parseText,
+  validateMatcher,
+} from './MultiSelectFunctions'
 import { MdClear } from 'react-icons/md'
-import { IoIosSearch } from "react-icons/io";
+import { IoIosSearch } from 'react-icons/io'
 import useExternalClicks from './hooks/useExternalClicks/useExternalClicks'
 import './MultiSelect.css'
 
@@ -47,7 +52,9 @@ interface MultiSelectProps {
   searchStartLength?: number
   showCategories?: boolean
   hideToolTip?: boolean
-  maxHistory?: number
+  allowFreeText?: boolean
+  pasteMatchTimeout?: number
+  pasteFreeTextAction?: FreTextFunc
   styles?: MutliSelectStyles
 }
 
@@ -73,6 +80,9 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   searchStartLength,
   showCategories,
   hideToolTip,
+  allowFreeText,
+  pasteFreeTextAction,
+  pasteMatchTimeout,
   styles,
 }) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null)
@@ -153,7 +163,9 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
   const validateFunction = (): boolean => {
     if (activeFunction?.requiredDataSources) {
-      const missing = activeFunction.requiredDataSources.filter(ds => !currentMatchers.find(m => m.source === ds))
+      const missing = activeFunction.requiredDataSources.filter(
+        (ds) => !currentMatchers.find((m) => m.source === ds),
+      )
       if (missing.length > 0) {
         if (onCompleteError) {
           onCompleteError(activeFunction.name, missing)
@@ -266,14 +278,16 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
   const matcherChanging = (matcher: Matcher) => {
     setInEdit(true)
-    notifyMatchersChanged(currentMatchers.map(m => {
-      return m.key === matcher.key
-        ? {
-          ...matcher,
-          changing: true
-        }
-        : m
-    }))
+    notifyMatchersChanged(
+      currentMatchers.map((m) => {
+        return m.key === matcher.key
+          ? {
+            ...matcher,
+            changing: true,
+          }
+          : m
+      }),
+    )
   }
 
   const insertMatcher = (
@@ -379,6 +393,26 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     }
   }
 
+  const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
+    const text = event.clipboardData?.getData('text')
+    if (text) {
+      parseText(text, dataSources, activeFunction, pasteFreeTextAction, pasteMatchTimeout).then(m =>
+        updatedMatchers([...currentMatchers, ...m])
+      )
+    }
+    event.stopPropagation()
+    event.preventDefault()
+  }
+
+  const handleCopy = (event: React.ClipboardEvent<HTMLDivElement>) => {
+    const text = activeFunction
+      ? `${activeFunction.name} ${currentMatchers.map(m => m.text.includes(' ') ? `"${m.text}"` : m.text).join(' ')}`
+      : currentMatchers.map(m => m.text).join(' ')
+    event.clipboardData?.setData('text', text)
+    event.stopPropagation()
+    event.preventDefault()
+  }
+
   const selection: Selection = {
     matchers: currentMatchers,
     activeFunction,
@@ -394,71 +428,99 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             className="multiSelectMain"
             ref={editDivRef}
             onKeyDown={handleKeyPress}
+            onPaste={handlePaste}
+            onCopy={handleCopy}
           >
             {currentMatchers.length > 0 && (
               <div className="multiSelectClearIcon" onClick={() => deleteAll()}>
                 {clearIcon ? clearIcon : <MdClear />}
               </div>
             )}
-            {activeFunction && (
-              <MatcherView
-                key={'function'}
-                matcher={activeFunction}
-                onDelete={deleteActiveFunction}
-              />
-            )}
-            {currentMatchers?.map((matcher, index) => (
-              <MatcherView
-                key={matcher.key}
-                matcher={matcher}
-                onMatcherChanged={updateMatcher}
-                onValidate={(m) =>
-                  validateMatcher(currentMatchers, dataSources, m, activeMatcher, config.operators, config.or)
-                }
-                onDelete={() => deleteMatcher(matcher, true)}
-                onSelect={() => selectMatcher(index)}
-                onCancel={() => clearActiveMatcher()}
-                onSwapMatcher={swapMatchers}
-                onEditPrevious={editLast}
-                onEditNext={editNext}
-                onChanging={() => matcherChanging(matcher)}
-                onInsertMatcher={(newMatcher) =>
-                  insertMatcher(newMatcher, matcher)
-                }
-                selected={index === activeMatcher}
-                first={
-                  index === 0 || currentMatchers[index - 1].comparison === '('
-                }
-                hideOperators={operators === 'Simple'}
-                showWarning={mismatchedBrackets.includes(index)}
-                showCategory={showCategories}
-                hideToolTip={hideToolTip}
-                styles={styles}
-              />
-            ))}
-            {
-              <MatcherEdit
-                ref={inputRef}
-                onMatcherChanged={addMatcher}
-                onValidate={(m) =>
-                  validateMatcher(currentMatchers, dataSources, m, activeMatcher, config.operators, config.or)
-                }
-                onFocus={editFocus}
-                inFocus={activeMatcher === null}
-                first={currentMatchers.length === 0}
-                allowFunctions={currentMatchers.length === 0 && activeFunction === null}
-                onEditPrevious={editLast}
-                onEditNext={editNext}
-                onInsertMatcher={(newMatcher) =>
-                  insertMatcher(newMatcher, null)
-                }
-                onSetActiveFunction={(activeFunction) =>
-                  setActiveFunction(activeFunction)
-                }
-                onDeleteActiveFunction={deleteActiveFunction}
-                styles={styles}
-              />
-            }
+            <div className='multiSelectFlow'>
+              {activeFunction && (
+                <MatcherView
+                  key={'function'}
+                  matcher={activeFunction}
+                  onDelete={deleteActiveFunction}
+                />
+              )}
+              {currentMatchers?.map((matcher, index) => (
+                <MatcherView
+                  key={matcher.key}
+                  matcher={matcher}
+                  onMatcherChanged={updateMatcher}
+                  onValidate={(m) =>
+                    validateMatcher(
+                      currentMatchers,
+                      dataSources,
+                      m,
+                      activeMatcher,
+                      config.operators,
+                      config.or,
+                    )
+                  }
+                  onDelete={() => deleteMatcher(matcher, true)}
+                  onSelect={() => selectMatcher(index)}
+                  onCancel={() => clearActiveMatcher()}
+                  onSwapMatcher={swapMatchers}
+                  onEditPrevious={editLast}
+                  onEditNext={editNext}
+                  onChanging={() => matcherChanging(matcher)}
+                  onInsertMatcher={(newMatcher) =>
+                    insertMatcher(newMatcher, matcher)
+                  }
+                  selected={index === activeMatcher}
+                  first={
+                    index === 0 || currentMatchers[index - 1].comparison === '('
+                  }
+                  hideOperators={operators === 'Simple'}
+                  showWarning={mismatchedBrackets.includes(index)}
+                  showCategory={showCategories}
+                  hideToolTip={hideToolTip}
+                  allowFreeText={
+                    allowFreeText ||
+                    (activeFunction !== null && activeFunction.allowFreeText)
+                  }
+                  styles={styles}
+                />
+              ))}
+              {activeMatcher === null && (
+                <MatcherEdit
+                  ref={inputRef}
+                  onMatcherChanged={addMatcher}
+                  onValidate={(m) =>
+                    validateMatcher(
+                      currentMatchers,
+                      dataSources,
+                      m,
+                      activeMatcher,
+                      config.operators,
+                      config.or,
+                    )
+                  }
+                  onFocus={editFocus}
+                  inFocus={activeMatcher === null}
+                  first={currentMatchers.length === 0}
+                  allowFunctions={
+                    currentMatchers.length === 0 && activeFunction === null
+                  }
+                  allowFreeText={
+                    allowFreeText ||
+                    (activeFunction !== null && activeFunction.allowFreeText)
+                  }
+                  onEditPrevious={editLast}
+                  onEditNext={editNext}
+                  onInsertMatcher={(newMatcher) =>
+                    insertMatcher(newMatcher, null)
+                  }
+                  onSetActiveFunction={(activeFunction) =>
+                    setActiveFunction(activeFunction)
+                  }
+                  onDeleteActiveFunction={deleteActiveFunction}
+                  styles={styles}
+                />
+              )}
+            </div>
             <IoIosSearch className="multiSelectSearchIcon" />
           </div>
         </selectionContext.Provider>
@@ -477,6 +539,7 @@ export type {
   OperatorDisplay,
   SourceItem,
   Nemonic,
+  FreTextFunc
 }
 export { defaultComparison, stringComparisons, numberComparisons, isUnique }
 export default MultiSelect

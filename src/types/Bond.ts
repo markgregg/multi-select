@@ -1,8 +1,8 @@
 export default interface Bond {
   isin: string
   currency: string
-  issueDate: Date
-  maturityDate: Date
+  issueDate: string
+  maturityDate: string
   price: number
   size: number
   side: string

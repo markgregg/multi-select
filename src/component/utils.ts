@@ -1,4 +1,3 @@
-
 export const guid = (): string => {
   const gen = (n?: number): string => {
     const rando = (): string => {
@@ -25,5 +24,3 @@ export const isUnique = (
 ): boolean => {
   return array.indexOf(value) === index
 }
-
-

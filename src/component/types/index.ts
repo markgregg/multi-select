@@ -8,7 +8,7 @@ import DataSource, {
 import Matcher, { Value } from './Matcher'
 import MutliSelectStyles from './MutliSelectStyles'
 import Option, { FUNC_ID } from './Opton'
-import Nemonic from './Nemonic'
+import Nemonic, { FreTextFunc } from './Nemonic'
 import Selection from './Selection'
 
 export type {
@@ -22,6 +22,7 @@ export type {
   SourceItem,
   Nemonic,
   Selection,
+  FreTextFunc
 }
 
 export { defaultComparison, stringComparisons, numberComparisons, FUNC_ID }

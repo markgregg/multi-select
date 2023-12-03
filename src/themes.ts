@@ -11,6 +11,7 @@ export const metallicTheme: MutliSelectStyles = {
     borderLeft: 'white 1px solid',
     background: 'linear-gradient(to left top, #00468C, #C3CDE6)',
     color: 'white',
+    minHeight: '37.5px'
   },
   input: {
     backgroundColor: 'transparent',
@@ -56,7 +57,6 @@ export const bodyStyleFromTheme = (
     return {
       background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
     }
-    return undefined
   }
 }
 
@@ -66,7 +66,11 @@ export const styleFromTheme = (
   if (theme === 'metallic') {
     return metallicTheme
   }
-  return undefined
+  return {
+    mutliSelect: {
+      minHeight: '37.5px'
+    }
+  }
 }
 
 export const styleCodeFromTheme = (theme: string): string => {

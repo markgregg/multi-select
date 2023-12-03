@@ -4,6 +4,7 @@ import MatcherEdit from '../MatcherEdit'
 import { TiMinus } from 'react-icons/ti'
 import Nemonic from '@/component/types/Nemonic'
 import './MatcherView.css'
+import { matcherDisplay, matcherToolTip } from './MatcherViewFunctions'
 
 const multiSelectPrefix = 'multi-select/matcher/'
 
@@ -25,26 +26,8 @@ interface MatcherViewProps {
   showWarning?: boolean
   showCategory?: boolean
   hideToolTip?: boolean
+  allowFreeText?: boolean
   styles?: MutliSelectStyles
-}
-
-const matcherDisplay = (
-  matcher: Matcher,
-  first: boolean,
-  hideOperators: boolean,
-): string => {
-  return `${first ||
-    hideOperators ||
-    matcher.operator === '' ||
-    matcher.comparison === ')'
-    ? ''
-    : (matcher.operator === '&' ? 'and' : 'or') + ' '
-    }${matcher.comparison !== '=' ? matcher.comparison : ''} ${matcher.text}`
-}
-
-const matcherToolTip = (matcher: Matcher): string => {
-  return `${matcher.source}: ${matcher.text}${matcher.value !== matcher.text ? '(' + matcher.value + ')' : ''
-    }`
 }
 
 const MatcherView: React.FC<MatcherViewProps> = ({
@@ -65,6 +48,7 @@ const MatcherView: React.FC<MatcherViewProps> = ({
   showWarning,
   showCategory,
   hideToolTip,
+  allowFreeText,
   styles,
 }) => {
   const labelRef = React.useRef<HTMLDivElement | null>(null)
@@ -145,7 +129,10 @@ const MatcherView: React.FC<MatcherViewProps> = ({
     <div
       id={'key' in matcher ? matcher.key + '_view' : 'function_view'}
       className="matcherViewMain"
-      style={selected ? styles?.matcherViewSelected : styles?.matcherView}
+      style={{
+        ...(selected ? styles?.matcherViewSelected : styles?.matcherView),
+        flexGrow: selected ? 1 : 0,
+      }}
       onClick={onSelect}
       draggable
       onDragStart={dragMatcher}
@@ -170,6 +157,7 @@ const MatcherView: React.FC<MatcherViewProps> = ({
           onEditPrevious={editPrevious}
           onChanging={onChanging}
           onInsertMatcher={onInsertMatcher}
+          allowFreeText={allowFreeText}
         />
       ) : (
         <>
@@ -193,8 +181,8 @@ const MatcherView: React.FC<MatcherViewProps> = ({
               'key' in matcher && matcher.source !== ''
                 ? {}
                 : {
-                  alignSelf: 'end'
-                }
+                    alignSelf: 'end',
+                  }
             }
           >
             {showCategory && 'key' in matcher && (
@@ -207,10 +195,10 @@ const MatcherView: React.FC<MatcherViewProps> = ({
             >
               {'key' in matcher
                 ? matcherDisplay(
-                  matcher,
-                  first ?? false,
-                  hideOperators ?? false,
-                )
+                    matcher,
+                    first ?? false,
+                    hideOperators ?? false,
+                  )
                 : matcher.name}
             </div>
           </div>
