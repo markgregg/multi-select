@@ -467,11 +467,13 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             onCopy={handleCopy}
             onClick={setInputFocus}
           >
-            {currentMatchers.length > 0 || activeFunction !== null && (
-              <div className="multiSelectClearIcon" onClick={() => deleteAll()}>
-                {clearIcon ? clearIcon : <MdClear />}
-              </div>
-            )}
+            {
+              (currentMatchers.length > 0 || activeFunction !== null) && (
+                <div className="multiSelectClearIcon" onClick={() => deleteAll()}>
+                  {clearIcon ? clearIcon : <MdClear />}
+                </div>
+              )
+            }
             <div className="multiSelectFlow">
               {activeFunction && (
                 <MatcherView
