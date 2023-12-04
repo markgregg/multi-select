@@ -33,7 +33,6 @@ interface MatcherEditProps {
   onInsertMatcher?: (matcher: Matcher) => void
   onSetActiveFunction?: (activeFunction: Nemonic) => void
   onDeleteActiveFunction?: () => void
-  inFocus?: boolean
   first: boolean
   allowFunctions?: boolean
   allowFreeText?: boolean
@@ -51,7 +50,6 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       onEditPrevious,
       onEditNext,
       onInsertMatcher,
-      inFocus,
       first,
       allowFunctions,
       allowFreeText,
@@ -64,11 +62,10 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const inputRef = React.useRef<HTMLInputElement | null>(null)
     const [text, setText] = React.useState<string>(
       matcher
-        ? `${
-            !first && config.operators !== 'Simple'
-              ? matcher.operator + ' '
-              : ''
-          }${matcher.comparison}${matcher.text}`
+        ? `${!first && config.operators !== 'Simple'
+          ? matcher.operator + ' '
+          : ''
+        }${matcher.comparison}${matcher.text}`
         : '',
     )
     const [comparison, setComparison] = React.useState<string>(
@@ -190,7 +187,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
             searchText = checkForOperator(searchText, functionState)
           }
           const result = checkForComparison(searchText)
-          if (result !== null) {
+          if (result !== null && result.length > 0) {
             searchText = result
             if (searchText.length >= (config.searchStartLength ?? 0)) {
               if (allowFunctions && config.functions) {
@@ -499,7 +496,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
         !event.ctrlKey &&
         !event.shiftKey &&
         event.currentTarget.selectionStart ===
-          event.currentTarget.value.length &&
+        event.currentTarget.value.length &&
         onEditNext
       ) {
         onEditNext()
@@ -598,13 +595,13 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       }
       const newMatcher: Matcher | null = option
         ? {
-            key: matcher?.key ?? guid(),
-            operator: option === ')' ? '' : operator,
-            comparison: option === '(' || option === ')' ? option : comparison,
-            source: typeof option === 'object' ? option.source : '',
-            value: typeof option === 'object' ? option.value : '',
-            text: typeof option === 'object' ? option.text : '',
-          }
+          key: matcher?.key ?? guid(),
+          operator: option === ')' ? '' : operator,
+          comparison: option === '(' || option === ')' ? option : comparison,
+          source: typeof option === 'object' ? option.source : '',
+          value: typeof option === 'object' ? option.value : '',
+          text: typeof option === 'object' ? option.text : '',
+        }
         : null
       if (newMatcher && onValidate) {
         const err = onValidate(newMatcher)
@@ -662,7 +659,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           type="text"
           placeholder="..."
         />
-        {controlHasFocus && inFocus && totalOptions > 0 && (
+        {controlHasFocus && totalOptions > 0 && (
           <OptionList
             options={options}
             activeOption={activeOption}

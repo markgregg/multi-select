@@ -83,7 +83,7 @@ describe('MatcherEdit', () => {
   it('test pg up', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
-      inFocus: true,
+
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -101,7 +101,7 @@ describe('MatcherEdit', () => {
   it('test pg down', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
-      inFocus: true,
+
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -119,7 +119,7 @@ describe('MatcherEdit', () => {
   it('test end', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
-      inFocus: true,
+
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -137,7 +137,7 @@ describe('MatcherEdit', () => {
   it('test home', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
-      inFocus: true,
+
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -155,7 +155,7 @@ describe('MatcherEdit', () => {
   it('test arrow up', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
-      inFocus: true,
+
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -173,7 +173,7 @@ describe('MatcherEdit', () => {
   it('test arrow down', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
-      inFocus: true,
+
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -252,7 +252,7 @@ describe('MatcherEdit', () => {
   it('test old promises ignored ', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
-      inFocus: true,
+
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -271,7 +271,7 @@ describe('MatcherEdit', () => {
 
   it('test old promises ignored ', async () => {
     const result = createMatcherEdit(false, undefined, {
-      inFocus: true,
+
     })
     const input = result.container.querySelector('#edit_input')
     expect(input).toBeDefined()
@@ -283,7 +283,7 @@ describe('MatcherEdit', () => {
 
   it('test simple operations', async () => {
     const result = createMatcherEdit(false, singleMatcher[0], {
-      inFocus: true,
+
       config: {
         dataSources: testDataSources,
         defaultComparison: '=',
@@ -312,7 +312,7 @@ describe('MatcherEdit', () => {
 
   it('test open bracket', async () => {
     const result = createMatcherEdit(false, openBracket, {
-      inFocus: true,
+
       config: {
         dataSources: testDataSources,
         defaultComparison: '=',
@@ -341,7 +341,7 @@ describe('MatcherEdit', () => {
 
   it('test close bracket', async () => {
     const result = createMatcherEdit(false, closeBracket, {
-      inFocus: true,
+
       config: {
         dataSources: testDataSources,
         defaultComparison: '=',
@@ -371,7 +371,7 @@ describe('MatcherEdit', () => {
   it('enter test open bracket', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
-      inFocus: true,
+
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -386,7 +386,7 @@ describe('MatcherEdit', () => {
   it('enter test close bracket', async () => {
     let matcher: Matcher | null | undefined
     const result = createMatcherEdit(false, undefined, {
-      inFocus: true,
+
       onMatcherChanged: (m) => {
         matcher = m
         return true
@@ -403,7 +403,6 @@ const createMatcherEdit = (
   first = false,
   matcher?: Matcher,
   options?: {
-    inFocus?: boolean
     isActive?: boolean
     onMatcherChanged?: (matcher: Matcher | null) => boolean
     onValidate?: (matcer: Matcher) => string | null
@@ -434,7 +433,6 @@ const createMatcherEdit = (
           }
           onEditNext={options?.onEditNext ?? (() => console.log('prev'))}
           onInsertMatcher={() => console.log('prev')}
-          inFocus={options?.inFocus}
           first={first}
         />
       </configContext.Provider>

@@ -150,7 +150,6 @@ const MatcherView: React.FC<MatcherViewProps> = ({
           onMatcherChanged={matcherUpdated}
           onValidate={onValidate}
           onCancel={onCancel}
-          inFocus={true}
           first={first ?? false}
           styles={styles}
           onEditNext={onEditNext}
@@ -181,8 +180,8 @@ const MatcherView: React.FC<MatcherViewProps> = ({
               'key' in matcher && matcher.source !== ''
                 ? {}
                 : {
-                    alignSelf: 'end',
-                  }
+                  alignSelf: 'end',
+                }
             }
           >
             {showCategory && 'key' in matcher && (
@@ -195,10 +194,10 @@ const MatcherView: React.FC<MatcherViewProps> = ({
             >
               {'key' in matcher
                 ? matcherDisplay(
-                    matcher,
-                    first ?? false,
-                    hideOperators ?? false,
-                  )
+                  matcher,
+                  first ?? false,
+                  hideOperators ?? false,
+                )
                 : matcher.name}
             </div>
           </div>

@@ -141,6 +141,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
   const clickedAway = React.useCallback(() => {
     setHasFocus(false)
+    setActiveMatcher(null)
   }, [])
 
   useExternalClicks(editDivRef.current, clickedAway)
@@ -286,8 +287,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         mtch.key === matcher.key
           ? swapMatcher
           : mtch.key === swapMatcher.key
-          ? matcher
-          : mtch,
+            ? matcher
+            : mtch,
       )
       updatedMatchers(newMatchers)
     }
@@ -299,9 +300,9 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       currentMatchers.map((m) => {
         return m.key === matcher.key
           ? {
-              ...matcher,
-              changing: true,
-            }
+            ...matcher,
+            changing: true,
+          }
           : m
       }),
     )
@@ -333,8 +334,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             activeMatcher === null
               ? currentMatchers.length - 1
               : activeMatcher > 0
-              ? activeMatcher - 1
-              : null,
+                ? activeMatcher - 1
+                : null,
           )
           event.preventDefault()
         } else if (
@@ -354,8 +355,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             activeMatcher === null
               ? 0
               : activeMatcher < currentMatchers.length - 1
-              ? activeMatcher + 1
-              : null,
+                ? activeMatcher + 1
+                : null,
           )
           event.preventDefault()
         } else if (
@@ -428,12 +429,10 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
   const handleCopy = (event: React.ClipboardEvent<HTMLDivElement>) => {
     const matcherText = (m: Matcher) =>
-      `${
-        m.operator !== 'and' && m.operator !== config.and
-          ? `${m.comparison} `
-          : ''
-      }${m.comparison !== '=' ? `${m.comparison} ` : ''}${
-        m.text.includes(' ') ? `"${m.text}"` : m.text
+      `${m.operator !== 'and' && m.operator !== config.and
+        ? `${m.operator} `
+        : ''
+      }${m.comparison !== '=' ? `${m.comparison} ` : ''}${m.text.includes(' ') ? `"${m.text}"` : m.text
       }`
     const text = activeFunction
       ? `${activeFunction.name} ${currentMatchers.map(matcherText).join(' ')}`
@@ -448,6 +447,12 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     activeFunction,
   }
 
+  const setInputFocus = () => {
+    if (activeMatcher === null) {
+      inputRef.current?.focus()
+    }
+  }
+
   return (
     <hasFocusContext.Provider value={hasFocus}>
       <configContext.Provider value={config}>
@@ -460,8 +465,9 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             onKeyDown={handleKeyPress}
             onPaste={handlePaste}
             onCopy={handleCopy}
+            onClick={setInputFocus}
           >
-            {currentMatchers.length > 0 && (
+            {currentMatchers.length > 0 || activeFunction !== null && (
               <div className="multiSelectClearIcon" onClick={() => deleteAll()}>
                 {clearIcon ? clearIcon : <MdClear />}
               </div>
@@ -529,7 +535,6 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                     )
                   }
                   onFocus={editFocus}
-                  inFocus={activeMatcher === null}
                   first={currentMatchers.length === 0}
                   allowFunctions={
                     currentMatchers.length === 0 && activeFunction === null
