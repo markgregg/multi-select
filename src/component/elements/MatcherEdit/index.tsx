@@ -56,7 +56,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       styles,
       onChanging,
       onSetActiveFunction,
-      onDeleteActiveFunction,
+      onDeleteActiveFunction
     } = props
     const config = React.useContext<Config>(configContext)
     const inputRef = React.useRef<HTMLInputElement | null>(null)
@@ -68,12 +68,13 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
         }${matcher.comparison}${matcher.text}`
         : '',
     )
-    const [comparison, setComparison] = React.useState<string>(
-      matcher?.comparison ?? config.defaultComparison,
+    const [comparison, setComparison] = React.useState<string | null>(
+      matcher?.comparison ?? null,
     )
-    const [operator, setOperator] = React.useState<string>(
-      matcher?.operator ?? config.and,
+    const [operator, setOperator] = React.useState<string | null>(
+      matcher?.operator ?? null,
     )
+    const [matchText, setMatchText] = React.useState<string | null>(null)
     const key = React.useRef('')
     const [options, setOptions] = React.useState<[string, Option[]][]>([])
     const [totalOptions, setTotalOptions] = React.useState<number>(0)
@@ -85,16 +86,41 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const controlHasFocus = React.useContext<boolean>(hasFocusContext)
     const selection = React.useContext<Selection>(selectionContext)
 
-    React.useEffect(() => {
-      inputRef.current?.focus()
-    }, [])
+    const setTextLine = (op: string | null = null, comp: string | null = null, option: Option | null = null) => {
+      let line = ''
+      if (op === '(' || op === ')') {
+        selectOption(op)
+      } else {
+        if (op || operator) {
+          line = `${op ?? operator} `
+        }
+        if (comp || comparison) {
+          line = `${line}${comp ?? comparison} `
+        }
+        if (option) {
+          selectOption(option)
+        } else {
+          line = `${line}${matchText ?? ''}`
+          handleTextChange(line)
+        }
+      }
+    }
 
     React.useEffect(() => {
       setError(null)
     }, [first])
 
+    React.useEffect(() => {
+      if (options.length === 0) {
+        setActiveOption(null)
+      }
+    }, [options])
+
     const resetEdit = () => {
       setText('')
+      setOperator(null)
+      setComparison(null)
+      setMatchText(null)
       setOptions([])
       setTotalOptions(0)
       setActiveOption(null)
@@ -107,7 +133,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       if (searchText.length > 2) {
         const symbol = searchText.substring(0, 3)
         if (symbol === 'and') {
-          setOperator(config.and)
+          setOperator('and')
           functionState.op = 'and'
           return searchText.substring(3).trim()
         }
@@ -115,7 +141,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       if (searchText.length > 1) {
         const symbol = searchText.substring(0, 2)
         if (symbol === 'or') {
-          setOperator(config.or)
+          setOperator('or')
           functionState.op = 'or'
           return searchText.substring(2).trim()
         }
@@ -158,7 +184,6 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
         }
         return null
       }
-
       if (config.comparisons.includes(symbol)) {
         setComparison(symbol)
         return searchText.substring(1).trim()
@@ -178,17 +203,18 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       functionState: FunctionState,
     ) => {
       if (newText.length > 0) {
-        let searchText = newText.trim()
-        if (searchText.length > 0 && searchText[0] !== '"') {
+        let result: string | null = newText.trim()
+        if (result.length > 0 && result[0] !== '"') {
           if (
             config.operators !== 'Simple' &&
             (!selection.activeFunction || !selection.activeFunction.noAndOr)
           ) {
-            searchText = checkForOperator(searchText, functionState)
+            result = checkForOperator(result, functionState)
           }
-          const result = checkForComparison(searchText)
+          result = checkForComparison(result)
+          setMatchText(result)
           if (result !== null && result.length > 0) {
-            searchText = result
+            const searchText = result
             if (searchText.length >= (config.searchStartLength ?? 0)) {
               if (allowFunctions && config.functions) {
                 buildFunctionOptions(
@@ -324,10 +350,10 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       }
     }
 
-    const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const newText = event.target.value
-      setComparison('=')
-      setOperator('&')
+    const handleTextChange = (newText: string) => {
+      setOperator(null)
+      setComparison(null)
+      setMatchText(null)
 
       if (!notifiedChanging && matcher) {
         setNotifiedChaning(true)
@@ -573,7 +599,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const validateOperator = (option: Option): string | null => {
       const ds = config.dataSources.find((d) => d.name === option.source)
       if (ds) {
-        if (!ds.comparisons.includes(comparison)) {
+        if (comparison !== null && !ds.comparisons.includes(comparison)) {
           const idx = text.indexOf(comparison)
           if (idx !== -1 && inputRef.current) {
             inputRef.current.selectionStart = idx
@@ -596,8 +622,8 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       const newMatcher: Matcher | null = option
         ? {
           key: matcher?.key ?? guid(),
-          operator: option === ')' ? '' : operator,
-          comparison: option === '(' || option === ')' ? option : comparison,
+          operator: option === ')' ? '' : operator ?? 'and',
+          comparison: option === '(' || option === ')' ? option : comparison ?? config.defaultComparison,
           source: typeof option === 'object' ? option.source : '',
           value: typeof option === 'object' ? option.value : '',
           text: typeof option === 'object' ? option.text : '',
@@ -649,7 +675,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
             }
           }}
           value={text}
-          onChange={handleTextChange}
+          onChange={e => handleTextChange(e.target.value)}
           onFocus={onFocus}
           onKeyDown={keyPressed}
           autoCapitalize="none"
@@ -659,13 +685,16 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           type="text"
           placeholder="..."
         />
-        {controlHasFocus && totalOptions > 0 && (
+        {controlHasFocus && (!matcher || options.length > 0) && (
           <OptionList
             options={options}
             activeOption={activeOption}
             onSelectActiveOption={setActiveOption}
             onSelectOption={selectOption}
             styles={styles}
+            onSelectComparison={comp => setTextLine(null, comp)}
+            onSelectOperator={op => setTextLine(op)}
+            onSelectText={option => setTextLine(null, null, option)}
           />
         )}
       </div>

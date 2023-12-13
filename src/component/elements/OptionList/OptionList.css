@@ -1,8 +1,13 @@
 .optionListMain {
   position: absolute;
   top: calc(100% + 5px);
+  left: 0px;
+  width: 100%;
   color: var(--matcherEditOptionsColor, black);
-  border: var(--matcherEditOptionsBorder, 1px solid rgb(204, 204, 204));
+  border-top: var(--matcherEditOptionsBorder, 2px solid gainsboro);
+  border-left: var(--matcherEditOptionsBorder, 2px solid gainsboro);
+  border-bottom: var(--matcherEditOptionsBorder, 2px solid darkgray);
+  border-right: var(--matcherEditOptionsBorder, 2px solid darkgray);
   border-radius: 4px;
   animation: growDown 300ms ease-in-out forwards;
   transform-origin: top center;
@@ -19,7 +24,7 @@
 }
 
 .optionListOption {
-  padding-left: 5px;
+  padding-left: 10px;
   padding-right: 5px;
   text-align: start;
 }
@@ -29,7 +34,7 @@
 }
 
 .optionListCategory {
-  background: var(--matcherEditMainCategoryBackground, darkgrey);
+
   font-weight: bold;
   font-size: x-small;
   padding-left: 5px;
@@ -48,4 +53,42 @@
   100% {
     transform: scaleY(1);
   }
+}
+
+.optionStaticList {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  overflow: auto;
+}
+
+.optionStaticItem {
+  padding-left: 10px;
+}
+
+.optionStaticItem:hover {
+  color: darkgray;
+}
+
+.optionStaticHeader {
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: x-small;
+}
+
+.optionStaticHeaderMenu {
+  position: relative;
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: x-small;
+}
+
+.optionStaticHeaderMenu:hover {
+  color: darkgray;
+}
+
+.subItemsList {
+  position: absolute;
+
 }

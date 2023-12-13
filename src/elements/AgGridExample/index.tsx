@@ -305,6 +305,20 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
           },
         ],
       },
+      {
+        name: 'Any',
+        title: 'Any',
+        comparisons: stringComparisons,
+        precedence: 0,
+        selectionLimit: 1,
+        definitions: [
+          {
+            ignoreCase: true,
+            match: /^[a-zA-Z ]{2,}$/,
+            value: (text: string) => text,
+          }
+        ],
+      }
     ],
     [findItems, findItem],
   )
@@ -357,7 +371,6 @@ const AgGridExample: React.FC<AgGridExampleProps> = ({ theme }) => {
           dataSources={dataSource}
           onMatchersChanged={matchersChanged}
           styles={styleFromTheme(theme)}
-          maxDropDownHeight={120}
           showCategories={true}
           operators="AgGrid"
         />

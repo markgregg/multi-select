@@ -2,6 +2,10 @@ import DataSource from './DataSource'
 import Nemonic from './Nemonic'
 
 export type OperatorDisplay = 'Names' | 'Symbols'
+export interface ComparisonItem {
+  symbol: string
+  description: string
+}
 
 export default interface Config {
   dataSources: DataSource[]
@@ -10,10 +14,10 @@ export default interface Config {
   and: string
   or: string
   comparisons: string[]
+  comparisonDescriptions: ComparisonItem[]
   defaultItemLimit: number
   operators: 'Simple' | 'AgGrid' | 'Complex'
   operatorDisplay?: OperatorDisplay
   maxDropDownHeight?: number
-  minDropDownWidth?: number
   searchStartLength?: number
 }

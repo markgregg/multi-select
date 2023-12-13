@@ -8,12 +8,12 @@ export const numberComparisons: string[] = ['=', '>', '<', '>=', '<=', '!']
 
 export interface DataSourceLookup {
   source:
-    | SourceItem[]
-    | ((
-        text: string,
-        op: 'or' | 'and' | null,
-        matchers: Matcher[],
-      ) => Promise<SourceItem[]>)
+  | SourceItem[]
+  | ((
+    text: string,
+    op: 'or' | 'and' | null,
+    matchers: Matcher[],
+  ) => Promise<SourceItem[]>)
   matchOnPaste?: boolean | ((text: string) => Promise<SourceItem | null>)
   textGetter?: (item: object) => string
   valueGetter?: (item: object) => Value
@@ -37,7 +37,9 @@ export interface DataSource {
   precedence?: number
   selectionLimit?: number
   functional?: boolean
+  hideOnShortcut?: boolean
   definitions: DataSourceMatch[]
+  defaultOperator?: string
 }
 
 export default DataSource

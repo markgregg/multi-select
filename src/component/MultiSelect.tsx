@@ -33,12 +33,14 @@ import { MdClear } from 'react-icons/md'
 import { IoIosSearch } from 'react-icons/io'
 import useExternalClicks from './hooks/useExternalClicks/useExternalClicks'
 import './MultiSelect.css'
+import { ComparisonItem } from './types/Config'
 
 interface MultiSelectProps {
   matchers?: Matcher[]
   dataSources: DataSource[]
   functions?: Nemonic[]
   defaultComparison?: string
+  comparisonDescriptons?: ComparisonItem[]
   and?: string
   or?: string
   defaultItemLimit?: number
@@ -52,7 +54,6 @@ interface MultiSelectProps {
   ) => void
   clearIcon?: React.ReactElement
   maxDropDownHeight?: number
-  minDropDownWidth?: number
   searchStartLength?: number
   showCategories?: boolean
   hideToolTip?: boolean
@@ -61,14 +62,18 @@ interface MultiSelectProps {
   pasteFreeTextAction?: FreTextFunc
   styles?: MutliSelectStyles
 }
-
 const comparisonsFromDataSources = (dataSources: DataSource[]): string[] => {
   return dataSources.flatMap((ds) => ds.comparisons).filter(isUnique)
+}
+
+const comparisonsDescriptionsFromDataSources = (dataSources: DataSource[]): ComparisonItem[] => {
+  return dataSources.flatMap((ds) => ds.comparisons).filter(isUnique).map(symbol => { return { symbol, description: '' } })
 }
 
 const MultiSelect: React.FC<MultiSelectProps> = ({
   matchers,
   defaultComparison,
+  comparisonDescriptons,
   and,
   or,
   dataSources,
@@ -80,7 +85,6 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   onCompleteError,
   clearIcon,
   maxDropDownHeight,
-  minDropDownWidth,
   searchStartLength,
   showCategories,
   hideToolTip,
@@ -112,22 +116,22 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       and: and ?? '&',
       or: or ?? '|',
       comparisons: comparisonsFromDataSources(dataSources),
+      comparisonDescriptions: comparisonDescriptons ?? comparisonsDescriptionsFromDataSources(dataSources),
       defaultItemLimit: defaultItemLimit ?? ITEM_LIMIT,
       operators: operators ?? 'Complex',
       maxDropDownHeight,
-      minDropDownWidth,
       searchStartLength,
     }
   }, [
     dataSources,
     functions,
     defaultComparison,
+    comparisonDescriptons,
     and,
     or,
     defaultItemLimit,
     operators,
     maxDropDownHeight,
-    minDropDownWidth,
     searchStartLength,
   ])
 
@@ -138,6 +142,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       setInEdit(false)
     }
   }, [matchers])
+
 
   const clickedAway = React.useCallback(() => {
     setHasFocus(false)
@@ -523,39 +528,46 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 />
               ))}
               {activeMatcher === null && (
-                <MatcherEdit
-                  ref={inputRef}
-                  onMatcherChanged={addMatcher}
-                  onValidate={(m) =>
-                    validateMatcher(
-                      currentMatchers,
-                      dataSources,
-                      m,
-                      activeMatcher,
-                      config.operators,
-                      config.or,
-                    )
-                  }
-                  onFocus={editFocus}
-                  first={currentMatchers.length === 0}
-                  allowFunctions={
-                    currentMatchers.length === 0 && activeFunction === null
-                  }
-                  allowFreeText={
-                    allowFreeText ||
-                    (activeFunction !== null && activeFunction.allowFreeText)
-                  }
-                  onEditPrevious={editLast}
-                  onEditNext={editNext}
-                  onInsertMatcher={(newMatcher) =>
-                    insertMatcher(newMatcher, null)
-                  }
-                  onSetActiveFunction={(activeFunction) =>
-                    setActiveFunction(activeFunction)
-                  }
-                  onDeleteActiveFunction={deleteActiveFunction}
-                  styles={styles}
-                />
+                <div
+                  className='defaultMatcherEdit'
+                  style={{
+                    paddingLeft: currentMatchers.length === 0 && activeFunction === null ? 4 : 0
+                  }}
+                >
+                  <MatcherEdit
+                    ref={inputRef}
+                    onMatcherChanged={addMatcher}
+                    onValidate={(m) =>
+                      validateMatcher(
+                        currentMatchers,
+                        dataSources,
+                        m,
+                        activeMatcher,
+                        config.operators,
+                        config.or,
+                      )
+                    }
+                    onFocus={editFocus}
+                    first={currentMatchers.length === 0}
+                    allowFunctions={
+                      currentMatchers.length === 0 && activeFunction === null
+                    }
+                    allowFreeText={
+                      allowFreeText ||
+                      (activeFunction !== null && activeFunction.allowFreeText)
+                    }
+                    onEditPrevious={editLast}
+                    onEditNext={editNext}
+                    onInsertMatcher={(newMatcher) =>
+                      insertMatcher(newMatcher, null)
+                    }
+                    onSetActiveFunction={(activeFunction) =>
+                      setActiveFunction(activeFunction)
+                    }
+                    onDeleteActiveFunction={deleteActiveFunction}
+                    styles={styles}
+                  />
+                </div>
               )}
             </div>
             <IoIosSearch className="multiSelectSearchIcon" />

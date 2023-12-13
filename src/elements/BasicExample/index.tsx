@@ -282,6 +282,7 @@ const BasicExample: React.FC<BasicExampleProps> = ({ theme }) => {
         comparisons: defaultComparison,
         precedence: 3,
         selectionLimit: 2,
+        hideOnShortcut: true,
         definitions: [
           {
             ignoreCase: true,
@@ -601,7 +602,19 @@ const BasicExample: React.FC<BasicExampleProps> = ({ theme }) => {
               alert(`${func}: ${missing.toString()}`)
             }
             showCategories={true}
-            hideToolTip={true}
+            hideToolTip={false}
+            comparisonDescriptons={[
+              { symbol: '=', description: 'Equals' },
+              { symbol: '!', description: 'Not equals' },
+              { symbol: '>', description: 'Greater' },
+              { symbol: '<', description: 'Less' },
+              { symbol: '>=', description: 'Greater equals' },
+              { symbol: '<=', description: 'Less equals' },
+              { symbol: '*', description: 'Like' },
+              { symbol: '!*', description: 'Not Like' },
+              { symbol: '>*', description: 'Starts With' },
+              { symbol: '<*', description: 'Ends With' },
+            ]}
           />
         </div>
         {interest && (

@@ -3,6 +3,7 @@ import DataSource, {
   DataSourceLookup,
   SourceItem,
 } from '@/component/types/DataSource'
+import { getText, getValue } from '@/component/utils'
 
 export const FUNCTIONS_TEXT = 'Functions'
 
@@ -41,14 +42,8 @@ export const mapOptions = (
   return items.map((item) => {
     return {
       source: name,
-      value:
-        dsl.valueGetter && typeof item === 'object'
-          ? dsl.valueGetter(item)
-          : item.toString(),
-      text:
-        dsl.textGetter && typeof item === 'object'
-          ? dsl.textGetter(item)
-          : item.toString(),
+      value: getValue(item, dsl),
+      text: getText(item, dsl)
     }
   })
 }
@@ -140,9 +135,9 @@ const getPosition = (index: number, options: [string, Option[]][]) => {
   return index === 0
     ? 0
     : options
-        .slice(0, index)
-        .map((entry) => entry[1].length)
-        .reduce((prev, curr) => prev + curr)
+      .slice(0, index)
+      .map((entry) => entry[1].length)
+      .reduce((prev, curr) => prev + curr)
 }
 
 export const getCategoryIndex = (
@@ -163,8 +158,8 @@ export const getCategoryIndex = (
         ? index + 1
         : 0
       : index > 0
-      ? index - 1
-      : options.length - 1,
+        ? index - 1
+        : options.length - 1,
     options,
   )
 }

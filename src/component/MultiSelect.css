@@ -16,6 +16,7 @@
   color: var(--multiSelectClearIconColor);
   display: flex;
   align-items: center;
+  padding-left: 4px;
 }
 
 .multiSelectClearIcon:hover {
@@ -24,4 +25,11 @@
 
 .multiSelectSearchIcon {
   align-self: center;
+  padding-right: 4px;
+}
+
+.defaultMatcherEdit {
+  flex-grow: 1;
+  display: flex;
+  align-self: end;
 }

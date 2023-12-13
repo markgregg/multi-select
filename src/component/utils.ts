@@ -1,3 +1,6 @@
+import { SourceItem, Value } from "./types"
+import { DataSourceLookup } from "./types/DataSource"
+
 export const guid = (): string => {
   const gen = (n?: number): string => {
     const rando = (): string => {
@@ -23,4 +26,22 @@ export const isUnique = (
   array: string[],
 ): boolean => {
   return array.indexOf(value) === index
+}
+
+export const getValue = (
+  item: SourceItem,
+  dsl: DataSourceLookup
+): Value => {
+  return dsl.valueGetter && typeof item === 'object'
+    ? dsl.valueGetter(item)
+    : item.toString()
+}
+
+export const getText = (
+  item: SourceItem,
+  dsl: DataSourceLookup
+): string => {
+  return dsl.textGetter && typeof item === 'object'
+    ? dsl.textGetter(item)
+    : item.toString()
 }
