@@ -54,6 +54,8 @@ interface MultiSelectProps {
   ) => void
   clearIcon?: React.ReactElement
   maxDropDownHeight?: number
+  minStaticListHeight?: number
+  maxStaticListHeight?: number
   searchStartLength?: number
   showCategories?: boolean
   hideToolTip?: boolean
@@ -85,6 +87,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   onCompleteError,
   clearIcon,
   maxDropDownHeight,
+  minStaticListHeight,
+  maxStaticListHeight,
   searchStartLength,
   showCategories,
   hideToolTip,
@@ -120,6 +124,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       defaultItemLimit: defaultItemLimit ?? ITEM_LIMIT,
       operators: operators ?? 'Complex',
       maxDropDownHeight,
+      minStaticListHeight,
+      maxStaticListHeight,
       searchStartLength,
     }
   }, [
@@ -132,6 +138,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     defaultItemLimit,
     operators,
     maxDropDownHeight,
+    minStaticListHeight,
+    maxStaticListHeight,
     searchStartLength,
   ])
 
@@ -394,6 +402,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             setCurrentMatchers([])
             setActiveMatcher(null)
             setActiveFunction(null)
+            setHasFocus(false)
           }
         }
         event.preventDefault()

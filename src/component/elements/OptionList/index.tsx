@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Option, MutliSelectStyles, Config, Value, SourceItem } from '../../types'
+import { Option, MutliSelectStyles, Config, Value } from '../../types'
 import { configContext } from '@/component/state/context'
 import { getText, getValue } from '@/component/utils'
 import { FaCaretDown } from "react-icons/fa";
@@ -142,53 +142,60 @@ const OptionList: React.FC<OptionListProps> = ({
       })
     })
     return <div
-      className='optionStaticList'
       style={{
-        maxHeight: config.maxDropDownHeight ?? 200
+        maxHeight: config.maxDropDownHeight ?? 310
       }}
     >
-      {
-        items.map(item =>
-          !('header' in item)
-            ? <div
-              className='optionStaticItem'
-              key={item.text + '-' + item.type}
-              onClick={() => {
-                if (item.type === 'comparison') {
-                  onSelectComparison(typeof item.value === 'string' ? item.value : item.value.toString())
-                } else if (item.type === 'operator') {
-                  onSelectOperator(typeof item.value === 'string' ? item.value : item.value.toString())
-                } else {
-                  onSelectText({ text: item.text, value: item.value, source: item.type })
-                }
-              }}
-            >
-              {item.text}
-            </div>
-            : !('items' in item)
-              ? ('type' in item)
-                ? <div className='optionStaticHeader' key={item.header}>{item.header} - {item.type}</div>
-                : <div className='optionStaticHeader' key={item.header}>{item.header}</div>
-              : <div
-                className='optionStaticHeaderMenu'
-                key={item.header}
-                onMouseEnter={() => setShowSubItems(item.header)}
-                onMouseLeave={() => setShowSubItems(null)}
-              >
-                {item.header}<FaCaretDown />
-                <div>
-                  {
-                    showItems === item.header &&
-                    <div className='subItemsList'>
-                      {
-                        item.items.map(subItem => <div key={item.header + '-' + subItem.text}>{subItem.text}</div>)
-                      }
-                    </div>
+      <div
+        className='optionStaticList'
+        style={{
+          minHeight: config.minStaticListHeight ?? 300,
+          maxHeight: config.maxStaticListHeight ?? 300
+        }}
+      >
+        {
+          items.map(item =>
+            !('header' in item)
+              ? <div
+                className='optionStaticItem'
+                key={item.text + '-' + item.type}
+                onClick={() => {
+                  if (item.type === 'comparison') {
+                    onSelectComparison(typeof item.value === 'string' ? item.value : item.value.toString())
+                  } else if (item.type === 'operator') {
+                    onSelectOperator(typeof item.value === 'string' ? item.value : item.value.toString())
+                  } else {
+                    onSelectText({ text: item.text, value: item.value, source: item.type })
                   }
-                </div>
+                }}
+              >
+                {item.text}
               </div>
-        )
-      }
+              : !('items' in item)
+                ? ('type' in item)
+                  ? <div className='optionStaticHeader' key={item.header}>{item.header} - {item.type}</div>
+                  : <div className='optionStaticHeader' key={item.header}>{item.header}</div>
+                : <div
+                  className='optionStaticHeaderMenu'
+                  key={item.header}
+                  onMouseEnter={() => setShowSubItems(item.header)}
+                  onMouseLeave={() => setShowSubItems(null)}
+                >
+                  {item.header}<FaCaretDown />
+                  <div>
+                    {
+                      showItems === item.header &&
+                      <div className='subItemsList'>
+                        {
+                          item.items.map(subItem => <div key={item.header + '-' + subItem.text}>{subItem.text}</div>)
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+          )
+        }
+      </div>
     </div>
   }
 

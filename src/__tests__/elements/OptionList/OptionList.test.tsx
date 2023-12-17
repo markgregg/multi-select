@@ -69,6 +69,9 @@ const createOptionList = (
       onSelectActiveOption={
         onActiveOption ? onActiveOption : (i) => console.log(i)
       }
+      onSelectComparison={() => console.log('comp')}
+      onSelectOperator={() => console.log('op')}
+      onSelectText={() => console.log('text')}
     />,
   )
 }
@@ -84,7 +87,7 @@ const checkClassText = (
     type === 'c'
       ? 'optionListCategory'
       : type === 'o'
-      ? 'optionListOption'
-      : 'optionListOption optionListActiveOption',
+        ? 'optionListOption'
+        : 'optionListOption optionListActiveOption',
   )
 }

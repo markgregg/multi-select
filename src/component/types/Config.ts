@@ -19,5 +19,7 @@ export default interface Config {
   operators: 'Simple' | 'AgGrid' | 'Complex'
   operatorDisplay?: OperatorDisplay
   maxDropDownHeight?: number
+  minStaticListHeight?: number
+  maxStaticListHeight?: number
   searchStartLength?: number
 }

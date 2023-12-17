@@ -11,6 +11,7 @@ const configContext = React.createContext<Config>({
   and: '&',
   or: '|',
   comparisons: [],
+  comparisonDescriptions: [],
   operators: 'Complex',
   defaultItemLimit: ITEM_LIMIT,
 })
