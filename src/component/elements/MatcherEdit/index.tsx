@@ -22,6 +22,7 @@ import './MatcherEdit.css'
 import { DataSourceLookup, DataSourceValue } from '@/component/types/DataSource'
 
 interface MatcherEditProps {
+  initial?: boolean
   matcher?: Matcher
   onMatcherChanged: (matcher: Matcher | null) => void
   onValidate?: (matcher: Matcher) => string | null
@@ -42,6 +43,7 @@ interface MatcherEditProps {
 const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
   (props, ref) => {
     const {
+      initial,
       matcher,
       onMatcherChanged,
       onValidate,
@@ -82,7 +84,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     const [error, setError] = React.useState<string | null>(null)
     const [notifiedChanging, setNotifiedChaning] =
       React.useState<boolean>(false)
-
+    const [hasFocus, setHasFocus] = React.useState<boolean>(false)
     const controlHasFocus = React.useContext<boolean>(hasFocusContext)
     const selection = React.useContext<Selection>(selectionContext)
 
@@ -107,14 +109,20 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
     }
 
     React.useEffect(() => {
+      if (inputRef.current && !initial) {
+        inputRef.current.focus()
+      }
+    }, [initial])
+
+    React.useEffect(() => {
       setError(null)
     }, [first])
 
     React.useEffect(() => {
-      if (options.length === 0) {
+      if (text.length === 0) {
         setActiveOption(null)
       }
-    }, [options])
+    }, [text])
 
     const resetEdit = () => {
       setText('')
@@ -654,6 +662,19 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
       }
     }
 
+    const gotFocus = () => {
+      if (onFocus) {
+        onFocus()
+      }
+      setHasFocus(true)
+      console.log('got focus')
+    }
+
+    const lostFocus = () => {
+      setHasFocus(false)
+      console.log('lost focus')
+    }
+
     return (
       <div className="matcherEditMain" style={styles?.matcherEdit}>
         {error && (
@@ -676,7 +697,8 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           }}
           value={text}
           onChange={e => handleTextChange(e.target.value)}
-          onFocus={onFocus}
+          onFocus={gotFocus}
+          onBlur={lostFocus}
           onKeyDown={keyPressed}
           autoCapitalize="none"
           autoComplete="off"
@@ -685,7 +707,7 @@ const MatcherEdit = React.forwardRef<HTMLInputElement, MatcherEditProps>(
           type="text"
           placeholder="..."
         />
-        {controlHasFocus && (!matcher || options.length > 0) && (
+        {controlHasFocus && hasFocus && (!matcher || options.length > 0) && (
           <OptionList
             options={options}
             activeOption={activeOption}

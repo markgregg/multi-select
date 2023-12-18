@@ -111,6 +111,11 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   const [activeFunction, setActiveFunction] = React.useState<Nemonic | null>(
     null,
   )
+  const [initial, setInitial] = React.useState<boolean>(true)
+
+  React.useEffect(() => {
+    setInitial(false)
+  }, [])
 
   const config = React.useMemo<Config>(() => {
     return {
@@ -150,7 +155,6 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       setInEdit(false)
     }
   }, [matchers])
-
 
   const clickedAway = React.useCallback(() => {
     setHasFocus(false)
@@ -398,11 +402,15 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
       case 'Enter':
         if (onComplete) {
           if (validateFunction()) {
-            onComplete(currentMatchers, activeFunction?.name)
-            setCurrentMatchers([])
-            setActiveMatcher(null)
-            setActiveFunction(null)
-            setHasFocus(false)
+            setTimeout(() => {
+              onComplete(currentMatchers, activeFunction?.name)
+              setCurrentMatchers([])
+              setActiveMatcher(null)
+              setActiveFunction(null)
+              if (inputRef.current) {
+                inputRef.current.blur()
+              }
+            }, 10)
           }
         }
         event.preventDefault()
@@ -544,6 +552,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                   }}
                 >
                   <MatcherEdit
+                    initial={initial}
                     ref={inputRef}
                     onMatcherChanged={addMatcher}
                     onValidate={(m) =>
